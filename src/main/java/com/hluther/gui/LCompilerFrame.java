@@ -9,18 +9,17 @@ import javax.swing.JTextArea;
  */
 public class LCompilerFrame extends javax.swing.JFrame {
     
-    private final String WHITESPACE = " ";
-    private boolean error;
-    
     private PrincipalFrameDriver guiDriver = new PrincipalFrameDriver();
     private AnalysisDriver analysisDriver = new AnalysisDriver();
     private JTextArea textArea;
    
     public LCompilerFrame() {
         initComponents();
+        this.setExtendedState(MAXIMIZED_BOTH);
+        this.setLocationRelativeTo(null);
+        
         textArea = guiDriver.addLineNumber(textAreaPanel);
         guiDriver.addTextAreaEvent(textArea, positionLabel);
-        this.setLocationRelativeTo(null);
     }
         
     public void printProcess(String msg){
@@ -31,14 +30,27 @@ public class LCompilerFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jSeparator10 = new javax.swing.JSeparator();
+        jSeparator11 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
-        openFileMenu = new javax.swing.JButton();
+        jSeparator13 = new javax.swing.JToolBar.Separator();
+        jButton1 = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JToolBar.Separator();
+        openFileMenu = new javax.swing.JButton();
+        jSeparator7 = new javax.swing.JToolBar.Separator();
+        jButton2 = new javax.swing.JButton();
+        jSeparator6 = new javax.swing.JToolBar.Separator();
+        jButton3 = new javax.swing.JButton();
+        jSeparator8 = new javax.swing.JToolBar.Separator();
         doAnalysisMenu = new javax.swing.JButton();
+        jSeparator12 = new javax.swing.JToolBar.Separator();
+        jButton4 = new javax.swing.JButton();
+        jSeparator9 = new javax.swing.JToolBar.Separator();
+        jButton5 = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
@@ -52,14 +64,27 @@ public class LCompilerFrame extends javax.swing.JFrame {
         textAreaPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         openFileMenuBar = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
         exitMenuBar = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
         jMenu1 = new javax.swing.JMenu();
         doAnalysisMenuBar = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        jMenuItem6 = new javax.swing.JMenuItem();
+        jMenu4 = new javax.swing.JMenu();
+        jMenuItem7 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Polinomios");
+        setTitle("LCompiler");
         setMinimumSize(new java.awt.Dimension(600, 400));
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
@@ -113,13 +138,26 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jToolBar1.setRollover(true);
         jToolBar1.setMaximumSize(new java.awt.Dimension(10, 25));
         jToolBar1.setMinimumSize(new java.awt.Dimension(10, 25));
+        jToolBar1.add(jSeparator13);
+
+        jButton1.setBackground(new java.awt.Color(60, 63, 68));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/newFile.png"))); // NOI18N
+        jButton1.setToolTipText("Nuevo Archivo... (Ctrl+N)");
+        jButton1.setBorderPainted(false);
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/newFileBW.png"))); // NOI18N
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton1);
+        jToolBar1.add(jSeparator2);
 
         openFileMenu.setBackground(new java.awt.Color(60, 63, 68));
-        openFileMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder.png"))); // NOI18N
+        openFileMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/open.png"))); // NOI18N
+        openFileMenu.setToolTipText("Abrir Archivo... (Ctrl+O)");
         openFileMenu.setBorderPainted(false);
         openFileMenu.setFocusable(false);
         openFileMenu.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        openFileMenu.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow.png"))); // NOI18N
+        openFileMenu.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/openBW.png"))); // NOI18N
         openFileMenu.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         openFileMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -127,14 +165,37 @@ public class LCompilerFrame extends javax.swing.JFrame {
             }
         });
         jToolBar1.add(openFileMenu);
-        jToolBar1.add(jSeparator2);
+        jToolBar1.add(jSeparator7);
+
+        jButton2.setBackground(new java.awt.Color(60, 63, 68));
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/save.png"))); // NOI18N
+        jButton2.setToolTipText("Guardar Archivo... (Ctrl+S)");
+        jButton2.setBorderPainted(false);
+        jButton2.setFocusable(false);
+        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton2.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/saveBW.png"))); // NOI18N
+        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton2);
+        jToolBar1.add(jSeparator6);
+
+        jButton3.setBackground(new java.awt.Color(60, 63, 68));
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/saveAs.png"))); // NOI18N
+        jButton3.setToolTipText("Guardar como... (Ctrl+Shift+S)");
+        jButton3.setBorderPainted(false);
+        jButton3.setFocusable(false);
+        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton3.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/saveAsBW.png"))); // NOI18N
+        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton3);
+        jToolBar1.add(jSeparator8);
 
         doAnalysisMenu.setBackground(new java.awt.Color(60, 63, 68));
-        doAnalysisMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/paly.png"))); // NOI18N
+        doAnalysisMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compile.png"))); // NOI18N
+        doAnalysisMenu.setToolTipText("Compilar... (Ctrl+E)");
         doAnalysisMenu.setBorderPainted(false);
         doAnalysisMenu.setFocusable(false);
         doAnalysisMenu.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        doAnalysisMenu.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/play1.png"))); // NOI18N
+        doAnalysisMenu.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/compileBW.png"))); // NOI18N
         doAnalysisMenu.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         doAnalysisMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -142,6 +203,27 @@ public class LCompilerFrame extends javax.swing.JFrame {
             }
         });
         jToolBar1.add(doAnalysisMenu);
+        jToolBar1.add(jSeparator12);
+
+        jButton4.setBackground(new java.awt.Color(60, 63, 68));
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/load.png"))); // NOI18N
+        jButton4.setBorderPainted(false);
+        jButton4.setFocusable(false);
+        jButton4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton4.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/loadBW.png"))); // NOI18N
+        jButton4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton4);
+        jToolBar1.add(jSeparator9);
+
+        jButton5.setBackground(new java.awt.Color(60, 63, 68));
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/delete.png"))); // NOI18N
+        jButton5.setToolTipText("Borrar Lenguaje... (Ctrl+D)");
+        jButton5.setBorderPainted(false);
+        jButton5.setFocusable(false);
+        jButton5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton5.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/deleteBW.png"))); // NOI18N
+        jButton5.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton5);
 
         jPanel4.add(jToolBar1, java.awt.BorderLayout.PAGE_START);
 
@@ -253,12 +335,22 @@ public class LCompilerFrame extends javax.swing.JFrame {
         fileMenu.setText("Archivo");
         fileMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
 
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem1.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem1.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
+        jMenuItem1.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/newFile.png"))); // NOI18N
+        jMenuItem1.setText("Nuevo");
+        jMenuItem1.setOpaque(true);
+        fileMenu.add(jMenuItem1);
+        fileMenu.add(jSeparator3);
+
         openFileMenuBar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         openFileMenuBar.setBackground(new java.awt.Color(48, 50, 55));
         openFileMenuBar.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
         openFileMenuBar.setForeground(new java.awt.Color(255, 255, 255));
-        openFileMenuBar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/folder.png"))); // NOI18N
-        openFileMenuBar.setText("Abrir Archivo...");
+        openFileMenuBar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/open.png"))); // NOI18N
+        openFileMenuBar.setText("Abrir");
         openFileMenuBar.setOpaque(true);
         openFileMenuBar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -266,13 +358,32 @@ public class LCompilerFrame extends javax.swing.JFrame {
             }
         });
         fileMenu.add(openFileMenuBar);
-        fileMenu.add(jSeparator1);
+        fileMenu.add(jSeparator4);
+
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem2.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem2.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
+        jMenuItem2.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/save.png"))); // NOI18N
+        jMenuItem2.setText("Guardar");
+        jMenuItem2.setOpaque(true);
+        fileMenu.add(jMenuItem2);
+
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem3.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem3.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
+        jMenuItem3.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/saveAs.png"))); // NOI18N
+        jMenuItem3.setText("Guardar Como");
+        jMenuItem3.setOpaque(true);
+        fileMenu.add(jMenuItem3);
+        fileMenu.add(jSeparator5);
 
         exitMenuBar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         exitMenuBar.setBackground(new java.awt.Color(48, 50, 55));
         exitMenuBar.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
         exitMenuBar.setForeground(new java.awt.Color(255, 255, 255));
-        exitMenuBar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logout.png"))); // NOI18N
+        exitMenuBar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/exit.png"))); // NOI18N
         exitMenuBar.setText("Salir");
         exitMenuBar.setOpaque(true);
         exitMenuBar.addActionListener(new java.awt.event.ActionListener() {
@@ -284,23 +395,76 @@ public class LCompilerFrame extends javax.swing.JFrame {
 
         jMenuBar1.add(fileMenu);
 
+        jMenu2.setForeground(new java.awt.Color(255, 255, 255));
+        jMenu2.setText("Lenguajes");
+        jMenu2.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        jMenuBar1.add(jMenu2);
+
         jMenu1.setForeground(new java.awt.Color(255, 255, 255));
-        jMenu1.setText("Analisis");
+        jMenu1.setText("Ejecutar");
         jMenu1.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
 
-        doAnalysisMenuBar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        doAnalysisMenuBar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         doAnalysisMenuBar.setBackground(new java.awt.Color(48, 50, 55));
         doAnalysisMenuBar.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
         doAnalysisMenuBar.setForeground(new java.awt.Color(255, 255, 255));
-        doAnalysisMenuBar.setText("Analizar");
+        doAnalysisMenuBar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compile.png"))); // NOI18N
+        doAnalysisMenuBar.setText("Compilar");
         doAnalysisMenuBar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doAnalysisMenuBarActionPerformed(evt);
             }
         });
         jMenu1.add(doAnalysisMenuBar);
+        jMenu1.add(jSeparator1);
+
+        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem4.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem4.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        jMenuItem4.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/load.png"))); // NOI18N
+        jMenuItem4.setText("Cargar Lenguaje");
+        jMenuItem4.setOpaque(true);
+        jMenu1.add(jMenuItem4);
+
+        jMenuItem5.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem5.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem5.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        jMenuItem5.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/delete.png"))); // NOI18N
+        jMenuItem5.setText("Borrar Lenguaje");
+        jMenuItem5.setOpaque(true);
+        jMenu1.add(jMenuItem5);
 
         jMenuBar1.add(jMenu1);
+
+        jMenu3.setForeground(new java.awt.Color(255, 255, 255));
+        jMenu3.setText("Ver");
+        jMenu3.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+
+        jMenuItem6.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem6.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem6.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        jMenuItem6.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/table.png"))); // NOI18N
+        jMenuItem6.setText("Tabla LALR");
+        jMenu3.add(jMenuItem6);
+
+        jMenuBar1.add(jMenu3);
+
+        jMenu4.setForeground(new java.awt.Color(255, 255, 255));
+        jMenu4.setText("Ayuda");
+        jMenu4.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+
+        jMenuItem7.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        jMenuItem7.setBackground(new java.awt.Color(48, 50, 55));
+        jMenuItem7.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        jMenuItem7.setForeground(new java.awt.Color(255, 255, 255));
+        jMenuItem7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/about.png"))); // NOI18N
+        jMenuItem7.setText("Acerca de...");
+        jMenu4.add(jMenuItem7);
+
+        jMenuBar1.add(jMenu4);
 
         setJMenuBar(jMenuBar1);
 
@@ -313,7 +477,6 @@ public class LCompilerFrame extends javax.swing.JFrame {
 
     private void convertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertButtonActionPerformed
       //  messageArea.setText("");
-        error = false;
     }//GEN-LAST:event_convertButtonActionPerformed
 
     private void openFileMenuBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileMenuBarActionPerformed
@@ -389,9 +552,24 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem doAnalysisMenuBar;
     private javax.swing.JMenuItem exitMenuBar;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -404,7 +582,18 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JSeparator jSeparator10;
+    private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JToolBar.Separator jSeparator12;
+    private javax.swing.JToolBar.Separator jSeparator13;
     private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JToolBar.Separator jSeparator6;
+    private javax.swing.JToolBar.Separator jSeparator7;
+    private javax.swing.JToolBar.Separator jSeparator8;
+    private javax.swing.JToolBar.Separator jSeparator9;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JTextPane messageArea;
     private javax.swing.JButton openFileMenu;
