@@ -26,13 +26,11 @@ public class LineNumber extends JPanel implements CaretListener, DocumentListene
     private int lastHeight;
     private int lastLine;
     private HashMap<String, FontMetrics> fonts;
-
     
     public LineNumber(JTextComponent component) {
         this(component, 3);
     }
 
-    
     public LineNumber(JTextComponent component, int minimumDisplayDigits) {
         this.component = component;
 
@@ -46,22 +44,18 @@ public class LineNumber extends JPanel implements CaretListener, DocumentListene
         component.addCaretListener(this);
         component.addPropertyChangeListener("font", this);
     }
-
     
     public boolean getUpdateFont() {
         return updateFont;
     }
-
     
     public void setUpdateFont(boolean updateFont) {
         this.updateFont = updateFont;
     }
-
     
     public int getBorderGap() {
         return borderGap;
     }
-
     
     public void setBorderGap(int borderGap) {
         this.borderGap = borderGap;
@@ -70,38 +64,33 @@ public class LineNumber extends JPanel implements CaretListener, DocumentListene
         lastDigits = 0;
         setPreferredWidth();
     }
-
    
     public Color getCurrentLineForeground() {
         return currentLineForeground == null ? getForeground() : currentLineForeground;
     }
-
     
     public void setCurrentLineForeground(Color currentLineForeground) {
         this.currentLineForeground = currentLineForeground;
     }
-
     
     public float getDigitAlignment() {
         return digitAlignment;
     }
+
     public void setDigitAlignment(float digitAlignment) {
         this.digitAlignment
                 = digitAlignment > 1.0f ? 1.0f : digitAlignment < 0.0f ? -1.0f : digitAlignment;
     }
-
    
     public int getMinimumDisplayDigits() {
         return minimumDisplayDigits;
     }
-
    
     public void setMinimumDisplayDigits(int minimumDisplayDigits) {
         this.minimumDisplayDigits = minimumDisplayDigits;
         setPreferredWidth();
     }
 
-    
     private void setPreferredWidth() {
         Element root = component.getDocument().getDefaultRootElement();
         int lines = root.getElementCount();
