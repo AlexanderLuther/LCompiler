@@ -6,6 +6,7 @@ import com.hluther.gui.LCompilerFrame;
 import javax.swing.JFileChooser;
 import org.apache.commons.io.FilenameUtils;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 /**
  *
@@ -13,8 +14,12 @@ import java.util.ArrayList;
  */
 public class FileChoosersDriver {
     
-    private FilesDriver filesDriver = new FilesDriver();
+    private FilesDriver filesDriver;
     private JFileChooser fileChooser;
+    
+    public FileChoosersDriver(FilesDriver filesDriver){
+        this.filesDriver = filesDriver;
+    }
     
     /*
     * Metodo encargado de abrir un JFileChooser y obtener el archivo seleccionado.
@@ -44,6 +49,37 @@ public class FileChoosersDriver {
             } 
         }
         return null;
+    }
+    
+    /*
+    * Metodo encargado de abrir un JFileChooser para elegir la ruta donde se 
+    * guardara un nuevo archivo. Se obtiene la ruta y se llama a la creacion 
+    * de un nuevo archivo vacio con la ruta obtenida. Se establecen los 
+    * atributos name, extension, path y tittle de la instancia de la clase tab
+    * recibida como parametro en base al archivo creado. Por ultimo se llama al
+    * metodo writeFile para llenar con informacion el archivo.
+    */
+    public boolean saveFile(LCompilerFrame frame, Tab tab) throws IOException{
+        String path = "";
+        fileChooser = new JFileChooser();
+        fileChooser.setApproveButtonText("Guardar");
+        fileChooser.setDialogTitle("Guardar Archivo");
+        fileChooser.setSelectedFile(new File(tab.getName()));
+        int selection = fileChooser.showOpenDialog(frame);   
+        if(selection == JFileChooser.APPROVE_OPTION){
+            //Crear archivo en blanco.
+            path = fileChooser.getSelectedFile().getAbsolutePath();
+            File file = filesDriver.createFile(path);
+            //Establecer los atributos de la instancia tab.
+            tab.setName(file.getName());
+            tab.setExtension(FilenameUtils.getExtension(tab.getName()));
+            tab.setPath(file.getPath());
+            tab.setTitle(tab.getName());
+            //Escribir dentro del archivo creado.
+            filesDriver.writeFile(tab.getPath(), tab.getData());
+            return true;
+        }
+        return false;
     }
     
     /*

@@ -1,8 +1,11 @@
 package com.hluther.controlClasses;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 /**
  *
@@ -10,7 +13,6 @@ import java.io.IOException;
  */
 public class FilesDriver {
     
-    private BufferedReader bufferReader;
     private String data;
     private String text;
 
@@ -22,11 +24,15 @@ public class FilesDriver {
     */
     public String readFile(String path){
         text = "";
+        BufferedReader bufferReader = null;
 	try {
             bufferReader = new BufferedReader(new FileReader(path));
             while ((data = bufferReader.readLine()) != null){    
-                text = text + data + "\n";
-            } 
+                text = text  +data+ "\n";
+            }
+            if(text.length()!=0){
+                text = text.substring(0, text.length()-1);
+            }
 	}
         catch (EOFException ex) {
             System.out.println("ERROR: Lectura finalizada");
@@ -42,7 +48,35 @@ public class FilesDriver {
 		System.out.println("ERROR: No se pudo cerrar el archivo");
             }
 	}
-        return text.substring(0, text.length()-1);
+        return text;
+    }
+    
+    /*
+    Metodo encargado de crear archivos dentro la ruta que se especifica como parametro.
+    */
+    public boolean writeFile(String path, String data){
+        try {
+            FileWriter fileWriter = new FileWriter(path);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(data);
+            bufferedWriter.close();
+	} catch (IOException ex) {
+            System.out.println("Mensaje de la excepción: " + ex.getMessage());
+            return false;
+        }
+        return true;
+    }
+    
+    /*
+    * Metodo encargado de crear un archivo en blanco. Recibe como parametro el path
+    * del archivo que se desea crear.
+    */
+    public File createFile(String path) throws IOException{
+        File file = new File(path);
+        if (!file.exists()){
+            file.createNewFile();
+        }
+        return file;
     }
     
 }

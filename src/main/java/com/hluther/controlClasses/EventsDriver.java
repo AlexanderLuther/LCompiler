@@ -25,7 +25,7 @@ public class EventsDriver {
                 int line = textArea.getLineOfOffset(position);
                 int column = position - textArea.getLineStartOffset(line);
                 line += 1;
-                positionLabel.setText("Linea: " + line + "           Columna: " + column);
+                positionLabel.setText("Lin: " + line + "  Col: " + column);
             }
             catch(BadLocationException ex){
                 System.out.println("Error al capturar el evento");

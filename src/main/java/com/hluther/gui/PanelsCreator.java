@@ -24,7 +24,6 @@ public class PanelsCreator {
     private JPanel panel;
     private JLabel label;
     private JButton button;
-    private final String BLANKSPACE = "   ";
     private int tabId = 0;
         
     /*
@@ -42,7 +41,7 @@ public class PanelsCreator {
         panel = new JPanel(new GridLayout());
         panel.add(scrollPane);
         frame.getTabbedPane().addTab(String.valueOf(tabId), panel);
-        addCloseButton(index, tab.getName(), frame.getTabbedPane());
+        addCloseButton(index, tab, frame.getTabbedPane());
         EventsDriver.addTextAreaEvent(tab, frame.getPositionLabel());
         EventsDriver.addButtonEvent(String.valueOf(tabId), button, frame);
         tabId++;
@@ -53,11 +52,13 @@ public class PanelsCreator {
     * Metodo encargado de agregar un nuevo panel que contendra el nombre del
     * archivo abierto y un boton para el cerrado de la pestana.
     */
-    private void addCloseButton(int index, String name, JTabbedPane tabbedPane){
+    private void addCloseButton(int index, Tab tab, JTabbedPane tabbedPane){
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
-        label = new JLabel(name + BLANKSPACE);
+        label = new JLabel();
         label.setForeground(new Color(69,73,74));
+        tab.setTitleLabel(label);
+        tab.setTitle(tab.getName());
         button = new JButton(new ImageIcon(getClass().getResource("/close.png")));
         button.setPreferredSize(new Dimension(10, 10));
         button.setBorderPainted(false);

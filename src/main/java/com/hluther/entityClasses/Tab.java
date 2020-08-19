@@ -1,5 +1,6 @@
 package com.hluther.entityClasses;
 
+import javax.swing.JLabel;
 import javax.swing.JTextArea;
 /**
  *
@@ -11,11 +12,14 @@ public class Tab extends JTextArea{
     private String extension;
     private String data;
     private String path;
+    private JLabel titleLabel;
+    private final String BLANKSPACE = "   ";
     
     public Tab(String name, String extension, String data) {
         this.name = name;
         this.extension = extension;
         this.data = data;
+        this.path = "";
         this.setText(this.data);
     }
 
@@ -59,6 +63,17 @@ public class Tab extends JTextArea{
     public void setPath(String path) {
         this.path = path;
     }
-    
+
+    public JLabel getTitleLabel() {
+        return titleLabel;
+    }
+
+    public void setTitleLabel(JLabel tittleLabel) {
+        this.titleLabel = tittleLabel;
+    }
+
+    public void setTitle(String title){
+        titleLabel.setText(title + BLANKSPACE);
+    }
     
 }

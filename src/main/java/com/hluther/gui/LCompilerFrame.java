@@ -2,11 +2,15 @@ package com.hluther.gui;
 
 import com.hluther.controlClasses.FileChoosersDriver;
 import com.hluther.controlClasses.AnalysisDriver;
+import com.hluther.controlClasses.FilesDriver;
+import com.hluther.controlClasses.ThreadsDriver;
 import com.hluther.entityClasses.Tab;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.text.Document;
 /**
  *
  * @author helmuth
@@ -14,34 +18,130 @@ import javax.swing.JTabbedPane;
 public class LCompilerFrame extends javax.swing.JFrame {
   
     private PanelsCreator panelsCreator = new PanelsCreator();
-    private FileChoosersDriver fileChoosersCreator = new FileChoosersDriver();
+    private FilesDriver filesDriver = new FilesDriver();
+    private FileChoosersDriver fileChoosersCreator = new FileChoosersDriver(filesDriver);
     private AnalysisDriver analysisDriver = new AnalysisDriver();
+    private ThreadsDriver threadsDriver = new ThreadsDriver();
     private ArrayList<Tab> tabs = new ArrayList<>();
     private final String DEFAULTNAME = "Untitle";
     private Tab tab;
     private int counter = 1;
+    private int selectedPane = -1;
    
     public LCompilerFrame() {
         this.setExtendedState(MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         initComponents();
+        enableComponents();
     }
 
+    //Getter
     public JLabel getPositionLabel() {
         return positionLabel;
     }
 
+    //Getter
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
     }
       
-    
-    
+    /*
+    * Remover un panel del JTabbedPane
+    * Abre un JOptionPane para indicar si se desean guardar los cambios hechos
+    * al archivo. Si el usuario presiona la opcion OK se realiza el proceso de
+    * guardado llamando al metodo saveFile(). Si el usuario presiona NO solo se
+    * remueve el panel actual y si el usuario presiona cancelar no se realiza 
+    * ninguna accion.
+    */
     public void removePanel(int index){
-        tabbedPane.remove(index);
-        tabs.remove(index);
+        int option = JOptionPane.showInternalConfirmDialog(null, "Desea guardar los cambios realizados?", "Guardar Archivo", 1);
+        switch(option){
+            case JOptionPane.OK_OPTION:
+                saveFile();
+                tabbedPane.remove(index);
+                tabs.remove(index);
+            break;
+            case JOptionPane.NO_OPTION:
+                tabbedPane.remove(index);
+                tabs.remove(index);
+            break;
+            default:
+            break;
+        }
+    }
+    
+    //Activar o desactivar componentes de la GUI.
+    private void enableComponents(){
+        if(selectedPane == -1){
+            saveFileButton.setEnabled(false);
+            saveFileMenu.setEnabled(false);
+            saveAsButton.setEnabled(false);
+            saveAsMenu.setEnabled(false);
+            compileButton.setEnabled(false);
+            compileMenu.setEnabled(false);
+        }
+        else{
+            saveFileButton.setEnabled(true);
+            saveFileMenu.setEnabled(true);
+            saveAsButton.setEnabled(true);
+            saveAsMenu.setEnabled(true);
+            compileButton.setEnabled(true);
+            compileMenu.setEnabled(true);
+        }
+    }
+    
+    /*
+    * Metodo encargado del proceso de guardado.
+    * Obtiene la pestana actual y valida si tiene algun path asociado o no. Si 
+    * tiene un path toda la informacion en el area de texto se guarda en el
+    * archivo correspondiente, de lo contario se llama al metodo saveAs() para 
+    * la creacion y escritura de un nuevo archivo. Por ultimo se muestra un 
+    * mensaje indicando la respuesta del sistema. 
+    */
+    private void saveFile(){
+        tab = tabs.get(selectedPane);
+        if(tab.getPath().isEmpty()){
+           saveAs();
+        }
+        else{
+            if(filesDriver.writeFile(tab.getPath(), tab.getData())) informationLabel.setText("Guardado en: " + tab.getPath());
+            else informationLabel.setText("Error al guardar el archivo.");
+        }
+        threadsDriver.clearLabel(informationLabel);
+        
+        
+        Document document = tab.getDocument();
+        
+    }
+    
+    /*
+    * Metodo encargado del proceso de guardado como.
+    * Obtiene la pestana actual y  manda a la creacion y escritura de un nuevo
+    * archivo. Por ultimo se muestra un mensaje indicando la respuesta del sistema. 
+    */
+    private void saveAs(){
+        tab = tabs.get(selectedPane);
+        try {
+            if(fileChoosersCreator.saveFile(this, tab)) informationLabel.setText("Guardado en: " + tab.getPath());
+            else informationLabel.setText("Guardado cancelado.");
+        } catch (IOException ex) {
+            informationLabel.setText("Error al guardar: " + ex.getMessage());
+        }
+        threadsDriver.clearLabel(informationLabel);
+    }
+    
+    //Agregar un nuevo JPanel al JTabbedPane
+    private void newFile(){
+        tabs.add(panelsCreator.addPanel(this, new Tab(DEFAULTNAME+counter, "", ""), tabs.size()));
+        counter++;
     }
    
+    //Agregar un JPanel con informacion de un archivo seleccionado.
+    private void openFile(){
+        tab = fileChoosersCreator.openFile(this, tabs);
+        if(tab != null) tabs.add(panelsCreator.addPanel(this, tab, tabs.size()));
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -68,7 +168,9 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jPanel5 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
         positionLabel = new javax.swing.JLabel();
+        informationLabel = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -195,6 +297,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
         saveFileButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         saveFileButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/saveBW.png"))); // NOI18N
         saveFileButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        saveFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileButtonActionPerformed(evt);
+            }
+        });
         jToolBar1.add(saveFileButton);
         jToolBar1.add(jSeparator6);
 
@@ -206,6 +313,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
         saveAsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         saveAsButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/saveAsBW.png"))); // NOI18N
         saveAsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        saveAsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsButtonActionPerformed(evt);
+            }
+        });
         jToolBar1.add(saveAsButton);
         jToolBar1.add(jSeparator8);
 
@@ -286,11 +398,29 @@ public class LCompilerFrame extends javax.swing.JFrame {
 
         jPanel5.add(jPanel11, java.awt.BorderLayout.LINE_END);
 
+        jPanel8.setLayout(new java.awt.BorderLayout());
+
+        positionLabel.setBackground(new java.awt.Color(69, 73, 74));
+        positionLabel.setFont(new java.awt.Font("Bitstream Vera Serif", 1, 13)); // NOI18N
         positionLabel.setForeground(new java.awt.Color(38, 169, 94));
-        positionLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        positionLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        positionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        positionLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        positionLabel.setMaximumSize(new java.awt.Dimension(200, 0));
+        positionLabel.setMinimumSize(new java.awt.Dimension(200, 0));
+        positionLabel.setOpaque(true);
+        positionLabel.setPreferredSize(new java.awt.Dimension(200, 0));
         positionLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        jPanel5.add(positionLabel, java.awt.BorderLayout.CENTER);
+        jPanel8.add(positionLabel, java.awt.BorderLayout.LINE_END);
+
+        informationLabel.setBackground(new java.awt.Color(69, 73, 74));
+        informationLabel.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        informationLabel.setForeground(new java.awt.Color(255, 255, 255));
+        informationLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        informationLabel.setOpaque(true);
+        informationLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+        jPanel8.add(informationLabel, java.awt.BorderLayout.CENTER);
+
+        jPanel5.add(jPanel8, java.awt.BorderLayout.CENTER);
 
         jPanel1.add(jPanel5, java.awt.BorderLayout.PAGE_END);
 
@@ -392,6 +522,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
         saveFileMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/save.png"))); // NOI18N
         saveFileMenu.setText("Guardar");
         saveFileMenu.setOpaque(true);
+        saveFileMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveFileMenuActionPerformed(evt);
+            }
+        });
         fileMenu.add(saveFileMenu);
 
         saveAsMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
@@ -401,6 +536,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
         saveAsMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/saveAs.png"))); // NOI18N
         saveAsMenu.setText("Guardar Como");
         saveAsMenu.setOpaque(true);
+        saveAsMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAsMenuActionPerformed(evt);
+            }
+        });
         fileMenu.add(saveAsMenu);
         fileMenu.add(jSeparator5);
 
@@ -511,37 +651,47 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private void convertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_convertButtonActionPerformed
     }//GEN-LAST:event_convertButtonActionPerformed
 
-    //Agregar un JPanel con informacion de un archivo seleccionado.
     private void openFileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileMenuActionPerformed
-        tab = fileChoosersCreator.openFile(this, tabs);
-        if(tab != null) tabs.add(panelsCreator.addPanel(this, tab, tabs.size()));
+        openFile();
     }//GEN-LAST:event_openFileMenuActionPerformed
     
-    //Agregar un JPanel con informacion de un archivo seleccionado.
     private void openFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileButtonActionPerformed
-        tab = fileChoosersCreator.openFile(this, tabs);
-        if(tab != null) tabs.add(panelsCreator.addPanel(this, tab, tabs.size()));
+        openFile();
     }//GEN-LAST:event_openFileButtonActionPerformed
-
-    //Agregar un nuevo JPanel al JTabbedPane 
+ 
     private void newFileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileMenuActionPerformed
-        tabs.add(panelsCreator.addPanel(this, new Tab(DEFAULTNAME+counter, "", ""), tabs.size()));
-        counter++;
+        newFile();
     }//GEN-LAST:event_newFileMenuActionPerformed
 
-    //Agregar un nuevo JPanel al JTabbedPane
     private void newFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFileButtonActionPerformed
-        tabs.add(panelsCreator.addPanel(this, new Tab(DEFAULTNAME+counter, "", ""), tabs.size()));
-        counter++;
+        newFile();
     }//GEN-LAST:event_newFileButtonActionPerformed
 
     private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
         positionLabel.setText("");
+        selectedPane = tabbedPane.getSelectedIndex();
+        enableComponents();
     }//GEN-LAST:event_tabbedPaneStateChanged
 
     private void aboutMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuActionPerformed
-        JOptionPane.showMessageDialog(this, "<html><font color = gray><center>Desarrollado por:<br>Helmuth Alexander Luther Montejo<br>201730457</center></font></html>", "Aceca De", 3);
+        JOptionPane.showMessageDialog(this, "<html><font color = teal><center>Desarrollado por:<br>Helmuth Alexander Luther Montejo<br>201730457</center></font></html>", "Aceca De", 3);
     }//GEN-LAST:event_aboutMenuActionPerformed
+
+    private void saveFileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileMenuActionPerformed
+        saveFile();
+    }//GEN-LAST:event_saveFileMenuActionPerformed
+
+    private void saveFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveFileButtonActionPerformed
+        saveFile();
+    }//GEN-LAST:event_saveFileButtonActionPerformed
+
+    private void saveAsMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsMenuActionPerformed
+        saveAs();
+    }//GEN-LAST:event_saveAsMenuActionPerformed
+
+    private void saveAsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsButtonActionPerformed
+        saveAs();
+    }//GEN-LAST:event_saveAsButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -601,6 +751,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem deleteMenu;
     private javax.swing.JMenuItem exitMenu;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JLabel informationLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -616,6 +767,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
