@@ -8,6 +8,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  *
  * @author helmuth
@@ -16,6 +17,7 @@ public class FileChoosersDriver {
     
     private FilesDriver filesDriver;
     private JFileChooser fileChooser;
+    private final FileNameExtensionFilter LEN_FILTER = new FileNameExtensionFilter("LEN","len");
     
     public FileChoosersDriver(FilesDriver filesDriver){
         this.filesDriver = filesDriver;
@@ -80,6 +82,23 @@ public class FileChoosersDriver {
             return true;
         }
         return false;
+    }
+    
+    /*
+    * Metodo encargado de abrir un JFileChooser para la seleccion de un 
+    * archivo con extension .len. Devuelve el path del archivo seleccionado.
+    */
+    public String getPath(LCompilerFrame frame){
+        fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.setFileFilter(LEN_FILTER);
+        fileChooser.setApproveButtonText("Cargar");
+        fileChooser.setDialogTitle("Cargar Lenguaje");  
+        int selection = fileChooser.showOpenDialog(frame);      
+        if(selection == JFileChooser.APPROVE_OPTION){
+            return fileChooser.getSelectedFile().getPath();
+        }
+        return null;
     }
     
     /*

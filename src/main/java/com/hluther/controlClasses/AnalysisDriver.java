@@ -1,8 +1,8 @@
 package com.hluther.controlClasses;
 
-//import com.hluther.parser.ParseException;
-//import com.hluther.parser.Parser;
 import com.hluther.gui.LCompilerFrame;
+import com.hluther.interpreter.lexer.Lexer;
+import com.hluther.interpreter.parser.Parser;
 import java.io.StringReader;
 /**
  *
@@ -10,14 +10,12 @@ import java.io.StringReader;
  */
 public class AnalysisDriver {
     
-    public void doAnalysis(String text, LCompilerFrame principalFrame){
-  /*      try {
-            Parser parser = new Parser(new StringReader(text));
-            parser.setPrincipalFrame(principalFrame);
-            parser.start();
-        } catch (ParseException ex) {
-            System.out.println("Error al analizar.");
-        }*/
+    public void doAnalysis(String data, LCompilerFrame lCompilerFrame){
+        try {
+            Parser parser = new Parser(new Lexer(new StringReader(data), lCompilerFrame), lCompilerFrame);
+            parser.parse();
+        } catch (Exception ex) {
+            System.out.println("Error al analizar: " +ex.getMessage());
+        }
     }
-   
 }

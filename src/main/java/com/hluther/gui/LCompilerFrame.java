@@ -142,6 +142,14 @@ public class LCompilerFrame extends javax.swing.JFrame {
         if(tab != null) tabs.add(panelsCreator.addPanel(this, tab, tabs.size()));
     }
     
+    private void uploadLanguage(){
+        
+    }
+    
+    public void printMessage(String msg){
+        messageArea.setText(messageArea.getText() + msg);
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -162,7 +170,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jSeparator8 = new javax.swing.JToolBar.Separator();
         compileButton = new javax.swing.JButton();
         jSeparator12 = new javax.swing.JToolBar.Separator();
-        loadButton = new javax.swing.JButton();
+        uploadButton = new javax.swing.JButton();
         jSeparator9 = new javax.swing.JToolBar.Separator();
         deleteButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
@@ -192,7 +200,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         compileMenu = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        loadMenu = new javax.swing.JMenuItem();
+        uploadMenu = new javax.swing.JMenuItem();
         deleteMenu = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         tableMenu = new javax.swing.JMenuItem();
@@ -329,17 +337,22 @@ public class LCompilerFrame extends javax.swing.JFrame {
         compileButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         compileButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/compileBW.png"))); // NOI18N
         compileButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        compileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compileButtonActionPerformed(evt);
+            }
+        });
         jToolBar1.add(compileButton);
         jToolBar1.add(jSeparator12);
 
-        loadButton.setBackground(new java.awt.Color(60, 63, 68));
-        loadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/load.png"))); // NOI18N
-        loadButton.setBorderPainted(false);
-        loadButton.setFocusable(false);
-        loadButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        loadButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/loadBW.png"))); // NOI18N
-        loadButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(loadButton);
+        uploadButton.setBackground(new java.awt.Color(60, 63, 68));
+        uploadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/load.png"))); // NOI18N
+        uploadButton.setBorderPainted(false);
+        uploadButton.setFocusable(false);
+        uploadButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        uploadButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/loadBW.png"))); // NOI18N
+        uploadButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(uploadButton);
         jToolBar1.add(jSeparator9);
 
         deleteButton.setBackground(new java.awt.Color(60, 63, 68));
@@ -578,14 +591,19 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jMenu1.add(compileMenu);
         jMenu1.add(jSeparator1);
 
-        loadMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
-        loadMenu.setBackground(new java.awt.Color(48, 50, 55));
-        loadMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
-        loadMenu.setForeground(new java.awt.Color(255, 255, 255));
-        loadMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/load.png"))); // NOI18N
-        loadMenu.setText("Cargar Lenguaje");
-        loadMenu.setOpaque(true);
-        jMenu1.add(loadMenu);
+        uploadMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        uploadMenu.setBackground(new java.awt.Color(48, 50, 55));
+        uploadMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        uploadMenu.setForeground(new java.awt.Color(255, 255, 255));
+        uploadMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/load.png"))); // NOI18N
+        uploadMenu.setText("Cargar Lenguaje");
+        uploadMenu.setOpaque(true);
+        uploadMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                uploadMenuActionPerformed(evt);
+            }
+        });
+        jMenu1.add(uploadMenu);
 
         deleteMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         deleteMenu.setBackground(new java.awt.Color(48, 50, 55));
@@ -693,6 +711,19 @@ public class LCompilerFrame extends javax.swing.JFrame {
         saveAs();
     }//GEN-LAST:event_saveAsButtonActionPerformed
 
+    private void uploadMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadMenuActionPerformed
+        try{
+            analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this);
+        } catch(NullPointerException e){
+            informationLabel.setText("Carga de lenguaje cancelada.");
+            threadsDriver.clearLabel(informationLabel);
+        }
+    }//GEN-LAST:event_uploadMenuActionPerformed
+
+    private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
+
+    }//GEN-LAST:event_compileButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -782,8 +813,6 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator8;
     private javax.swing.JToolBar.Separator jSeparator9;
     private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JButton loadButton;
-    private javax.swing.JMenuItem loadMenu;
     private javax.swing.JTextPane messageArea;
     private javax.swing.JButton newFileButton;
     private javax.swing.JMenuItem newFileMenu;
@@ -797,5 +826,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem stackMenu;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JMenuItem tableMenu;
+    private javax.swing.JButton uploadButton;
+    private javax.swing.JMenuItem uploadMenu;
     // End of variables declaration//GEN-END:variables
 }

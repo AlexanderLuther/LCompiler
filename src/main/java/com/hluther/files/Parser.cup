@@ -1,0 +1,107 @@
+package com.hluther.interpreter.parser;
+import java_cup.runtime.*;
+import com.hluther.gui.LCompilerFrame;
+import com.hluther.interpreter.lexer.Lexer;
+import com.hluther.entityClasses.Language;
+
+parser code {:
+
+    private LCompilerFrame lCompilerFrame;
+    
+    public Parser(Lexer lexer, LCompilerFrame lCompilerFrame) { 
+        super(lexer);
+        this.lCompilerFrame = lCompilerFrame;
+    }
+
+    public void print(String msg){
+        lCompilerFrame.printMessage(msg + "\n");
+    }
+
+    public void syntax_error(Symbol s){
+        lCompilerFrame.printMessage("Numero no valido. debe de cumplir con la forma ##.##");
+    }
+
+    public void unrecovered_syntax_error(Symbol s){
+       
+    } 
+:}
+
+/* Terminals */
+terminal String     SEPARATOR, COLON, SEMICOLON, FULLSTOP, ID, NAME, VERSION, AUTHOR, RELEASE, EXTENSION, CODE, SPECIALCHARACTER, QUESTIONMARK, ASTERISK, PLUS, VERTICALBAR, MACRONUMBERS, MACROLETTERS,
+                    LINEBREAK, TAB, BLANKSPACE, DOUBLEQUOTES, CURLYBRACKETO, CURLYBRACKETC, SQUAREBRACKETO, SQUAREBRACKETC, IGNORE, EQUALS, CHARACTER;
+terminal Integer    INTEGERNUM;
+
+/* Non-terminals */
+non terminal            s, regularExpresions, expresion;
+non terminal String     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode;
+non terminal Integer    languageRelease;
+non terminal Language   languageInformation;
+
+/* The grammar */
+start with s;
+
+s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regularExpresions SEPARATOR{: if(language.getName().equals("")){ print("Error Semantico: No se encontro ningun nombre para el lenguaje");} language.setSourceCode(code); if(language.getSourceCode().isBlank()){language.setSourceCode("");} System.out.println(language.getSourceCode()); :}
+        | languageInformation:language SEPARATOR SEPARATOR regularExpresions SEPARATOR{: if(language.getName().equals("")) { print("Error Semantico: No se encontro ningun nombre para el lenguaje");} System.out.println(language.getSourceCode()); :}
+        ;
+
+
+//--------------------------------  LANGUAGE INFORMATION SECTION --------------------------------//
+
+languageInformation::=  languageName:name languageInformation:language {: language.setName(name); RESULT = language; :}
+                        | languageVersion:version languageInformation:language {: language.setVersion(version); RESULT = language; :}
+                        | languageAutor:author languageInformation:language {: language.setAuthor(author); RESULT = language; :}
+                        | languageRelease:value languageInformation:language {: language.setRelease(value); RESULT = language; :}
+                        | languageExtension:extension languageInformation:language {: language.setExtension(extension); RESULT = language; :}
+                        | languageName:name {: RESULT = new Language(name, "", "", -1, ""); :}
+                        | languageVersion:version {: RESULT = new Language("", version, "", -1, ""); :}
+                        | languageAutor:author  {: RESULT = new Language("", "", author, -1, ""); :}
+                        | languageRelease:value {: RESULT = new Language("", "", "", value, ""); :}
+                        | languageExtension:extension {: RESULT = new Language("", "", "", -1, extension); :}
+                        ;
+
+languageName::=     NAME COLON ID:name SEMICOLON {: RESULT = name; :} 
+                    ;
+
+languageVersion::=  VERSION COLON version:value SEMICOLON {: RESULT = value; :}
+                    ;
+
+version::=    INTEGERNUM:value FULLSTOP version:previousValue {: RESULT = value.toString() +"."+ previousValue; :}
+              | INTEGERNUM:value {: RESULT = value.toString(); :}
+              ;
+
+languageAutor::=    AUTHOR COLON author:name SEMICOLON {: RESULT = name; :}
+                    ;
+
+author::=   ID:name author:previousName {: RESULT = name +" "+ previousName; :}
+            | INTEGERNUM:value author:previousName {: RESULT = value.toString() +" "+ previousName; :}
+            | ID: name {: RESULT = name; :}
+            | INTEGERNUM:value {: RESULT = value.toString(); :}
+            ;
+
+languageRelease::=      RELEASE COLON INTEGERNUM:value SEMICOLON {: RESULT = value; :}
+                        ;
+
+languageExtension::=    EXTENSION COLON ID:extension SEMICOLON {: RESULT = extension; :}
+                        ;
+   
+
+//--------------------------------  SOURCE CODE SECTION --------------------------------//
+
+sourceCode::=   CODE:code sourceCode:previousCode {: RESULT = code + previousCode; :}
+                | SPECIALCHARACTER:character sourceCode:previousCode {: RESULT = character + previousCode; :}
+                | CODE:code {: RESULT = code; :}
+                | SPECIALCHARACTER:character {: RESULT = character; :}
+                ;
+
+
+//--------------------------------  REGULAR EXPRESIONS SECTION --------------------------------//
+
+regularExpresions::=    ID EQUALS expresion SEMICOLON regularExpresions
+                        | IGNORE EQUALS expresion SEMICOLON regularExpresions
+                        | ID EQUALS expresion SEMICOLON
+                        | IGNORE EQUALS expresion SEMICOLON
+                        ;
+
+expresion::=    QUESTIONMARK;
+                        
+
