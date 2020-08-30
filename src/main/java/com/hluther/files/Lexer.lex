@@ -13,7 +13,7 @@ import java_cup.runtime.*;
 %line 
 %column
 %public
-%states CODE, REGULAR_EXPRESIONS, SYMBOLS
+%states CODE, REGULAR_EXPRESIONS_DECLARATION, REGULAR_EXPRESIONS_DEFINITION, SYMBOLS
 
 Letter = [a-zA-Z]
 Number = [0-9]
@@ -88,33 +88,41 @@ WhiteSpace = {LineTerminator} | [ \t\f]
 }
 
 <CODE>{
-    "%%"                                            { yybegin(REGULAR_EXPRESIONS); printToken("SEPARATOR"); return symbol(sym.SEPARATOR, yytext()); }
+    "%%"                                            { yybegin(REGULAR_EXPRESIONS_DECLARATION); printToken("SEPARATOR"); return symbol(sym.SEPARATOR, yytext()); }
     {WhiteSpace}                                    { printToken("SPECIALCHARACTER"); return symbol(sym.SPECIALCHARACTER, yytext()); }
     [^]                                             { printToken("CODE"); return symbol(sym.CODE, yytext()); }
 }
 
-<REGULAR_EXPRESIONS>{
-    "%%"                                            { yybegin(SYMBOLS); printToken("SEPARATOR"); return symbol(sym.SEPARATOR, yytext()); }
+<REGULAR_EXPRESIONS_DECLARATION>{
+    "%%"                                            { yybegin(SYMBOLS); printToken("SEPARATOR"); printError(); return symbol(sym.SEPARATOR, yytext()); }
+    "="                                             { yybegin(REGULAR_EXPRESIONS_DEFINITION); printToken("EQUALS"); printError(); return symbol(sym.EQUALS, yytext()); }
+    "&"                                             { printToken("IGNORE"); return symbol(sym.IGNORE, yytext()); }
+    "//"{InputCharacter}* {LineTerminator}?         { printToken("LINECOMMENT"); printError(); } //Ignore
+    ("/*" [^*/]* "*/") | ("/*" [^/]~ "*/")          { printToken("BLOCKCOMMENT"); printError(); } //Ignore
+    {Letter} ({Letter} | {Number})*                 { printToken("ID"); printError(); return symbol(sym.ID, yytext()); }
+    {WhiteSpace}                                    { printError(); } //Ignore
+    [^]                                             { printToken("ERROR"); createErrorLexeme(yytext(), (yyline+1), yycolumn); }
+}
+
+<REGULAR_EXPRESIONS_DEFINITION>{
+    ";"                                             { yybegin(REGULAR_EXPRESIONS_DECLARATION); printToken("SEMICOLON"); return symbol(sym.SEMICOLON, yytext()); }
     "//"{InputCharacter}* {LineTerminator}?         { printToken("LINECOMMENT"); } //Ignore
     ("/*" [^*/]* "*/") | ("/*" [^/]~ "*/")          { printToken("BLOCKCOMMENT"); } //Ignore
     "?"                                             { printToken("QUESTIONMARK"); return symbol(sym.QUESTIONMARK, yytext()); }
     "*"                                             { printToken("ASTERISK"); return symbol(sym.ASTERISK, yytext()); }
     "+"                                             { printToken("PLUS"); return symbol(sym.PLUS, yytext()); }
     "|"                                             { printToken("VERTICALBAR"); return symbol(sym.VERTICALBAR, yytext()); }
-    "["{Number}"-"{Number}"]"                       { printToken("MACRONUMBERS"); return symbol(sym.MACRONUMBERS, yytext()); }
-    "["{Letter}"-"{Letter}"]"                       { printToken("MACROLETTERS"); return symbol(sym.MACROLETTERS, yytext()); }
+    "["{Number}"-"{Number}"]"                       { printToken("MACRONUMBERS"); return symbol(sym.MACRONUMBERS, yytext().replace("[", "").replace("]", "").replaceAll(" ", "")); }
+    "["[A-Z]"-"[A-Z]"]"                             { printToken("MACROLETTERSMAY"); return symbol(sym.MACROLETTERSMAY, yytext().replace("[", "").replace("]", "").replaceAll(" ", "")); }
+    "["[a-z]-[a-z]"]"                               { printToken("MACROLETTERSMIN"); return symbol(sym.MACROLETTERSMIN, yytext().replace("[", "").replace("]", "").replaceAll(" ", "")); }
     "\\n"                                           { printToken("LINEBREAK"); return symbol(sym.LINEBREAK, yytext()); }
     "\\t"                                           { printToken("TAB"); return symbol(sym.TAB, yytext()); }
     "\\b"                                           { printToken("BLANKSPACE"); return symbol(sym.BLANKSPACE, yytext()); }
     "\""                                            { printToken("DOUBLEQUOTES"); return symbol(sym.DOUBLEQUOTES, yytext()); } 
-    "("                                             { printToken("CURLYBRACKETO"); return symbol(sym.CURLYBRACKETO, yytext()); }
-    "}"                                             { printToken("CURLYBRACKETC"); return symbol(sym.CURLYBRACKETC, yytext()); }
+    "("                                             { printToken("PARENTHESESO"); return symbol(sym.PARENTHESESO, yytext()); }
+    ")"                                             { printToken("PARENTHESESC"); return symbol(sym.PARENTHESESC, yytext()); }
     "["                                             { printToken("SQUAREBRACKETO"); return symbol(sym.SQUAREBRACKETO, yytext()); }
     "]"                                             { printToken("SQUAREBRACKETC"); return symbol(sym.SQUAREBRACKETC, yytext()); } 
-    "&"                                             { printToken("IGNORE"); return symbol(sym.IGNORE, yytext()); }
-    "="                                             { printToken("EQUALS"); return symbol(sym.EQUALS, yytext()); }
-    ";"                                             { printToken("SEMICOLON"); printError(); return symbol(sym.SEMICOLON, yytext()); }
-    {Letter} ({Letter} | {Number})*                 { printToken("ID"); return symbol(sym.ID, yytext()); }
     {WhiteSpace}                                    { } //Ignore
     [^]                                             { printToken("CHARACTER"); return symbol(sym.CHARACTER, yytext()); }
 }

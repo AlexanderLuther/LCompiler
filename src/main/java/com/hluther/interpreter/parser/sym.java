@@ -8,38 +8,39 @@ package com.hluther.interpreter.parser;
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int MACROLETTERS = 19;
   public static final int FULLSTOP = 5;
+  public static final int ASTERISK = 19;
   public static final int SEMICOLON = 4;
-  public static final int ASTERISK = 15;
-  public static final int PLUS = 16;
-  public static final int CHARACTER = 30;
-  public static final int TAB = 21;
+  public static final int PARENTHESESC = 27;
+  public static final int PLUS = 20;
+  public static final int TAB = 23;
+  public static final int CHARACTER = 17;
   public static final int AUTHOR = 9;
   public static final int NAME = 7;
-  public static final int IGNORE = 28;
+  public static final int IGNORE = 30;
   public static final int SEPARATOR = 2;
   public static final int CODE = 12;
   public static final int COLON = 3;
-  public static final int SQUAREBRACKETO = 26;
-  public static final int QUESTIONMARK = 14;
+  public static final int SQUAREBRACKETO = 28;
+  public static final int QUESTIONMARK = 18;
   public static final int ID = 6;
-  public static final int BLANKSPACE = 22;
+  public static final int BLANKSPACE = 24;
   public static final int RELEASE = 10;
-  public static final int MACRONUMBERS = 18;
-  public static final int EQUALS = 29;
-  public static final int CURLYBRACKETO = 24;
-  public static final int DOUBLEQUOTES = 23;
+  public static final int MACROLETTERSMIN = 16;
+  public static final int MACRONUMBERS = 14;
+  public static final int EQUALS = 31;
+  public static final int MACROLETTERSMAY = 15;
+  public static final int DOUBLEQUOTES = 25;
   public static final int EOF = 0;
   public static final int EXTENSION = 11;
-  public static final int INTEGERNUM = 31;
-  public static final int SQUAREBRACKETC = 27;
+  public static final int INTEGERNUM = 32;
+  public static final int SQUAREBRACKETC = 29;
   public static final int error = 1;
-  public static final int CURLYBRACKETC = 25;
   public static final int VERSION = 8;
   public static final int SPECIALCHARACTER = 13;
-  public static final int LINEBREAK = 20;
-  public static final int VERTICALBAR = 17;
+  public static final int PARENTHESESO = 26;
+  public static final int LINEBREAK = 22;
+  public static final int VERTICALBAR = 21;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -55,23 +56,24 @@ public class sym {
   "EXTENSION",
   "CODE",
   "SPECIALCHARACTER",
+  "MACRONUMBERS",
+  "MACROLETTERSMAY",
+  "MACROLETTERSMIN",
+  "CHARACTER",
   "QUESTIONMARK",
   "ASTERISK",
   "PLUS",
   "VERTICALBAR",
-  "MACRONUMBERS",
-  "MACROLETTERS",
   "LINEBREAK",
   "TAB",
   "BLANKSPACE",
   "DOUBLEQUOTES",
-  "CURLYBRACKETO",
-  "CURLYBRACKETC",
+  "PARENTHESESO",
+  "PARENTHESESC",
   "SQUAREBRACKETO",
   "SQUAREBRACKETC",
   "IGNORE",
   "EQUALS",
-  "CHARACTER",
   "INTEGERNUM"
   };
 }

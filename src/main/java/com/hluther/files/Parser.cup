@@ -1,16 +1,24 @@
 package com.hluther.interpreter.parser;
 import java_cup.runtime.*;
+import java.util.LinkedList;
 import com.hluther.gui.LCompilerFrame;
 import com.hluther.interpreter.lexer.Lexer;
 import com.hluther.entityClasses.Language;
+import com.hluther.entityClasses.Node;
+import com.hluther.controlClasses.NodesDriver;
+import com.hluther.interpreter.AST.Instruction;
+import com.hluther.interpreter.AST.RegularExpresion;
+import com.hluther.interpreter.AST.LexerCreator;
 
 parser code {:
 
     private LCompilerFrame lCompilerFrame;
-    
-    public Parser(Lexer lexer, LCompilerFrame lCompilerFrame) { 
+    private NodesDriver nodesDriver;
+
+    public Parser(Lexer lexer, LCompilerFrame lCompilerFrame, NodesDriver nodesDriver) { 
         super(lexer);
         this.lCompilerFrame = lCompilerFrame;
+        this.nodesDriver = nodesDriver;
     }
 
     public void print(String msg){
@@ -18,7 +26,7 @@ parser code {:
     }
 
     public void syntax_error(Symbol s){
-        lCompilerFrame.printMessage("Numero no valido. debe de cumplir con la forma ##.##");
+        lCompilerFrame.printMessage("Error: "+ s.toString());
     }
 
     public void unrecovered_syntax_error(Symbol s){
@@ -27,36 +35,54 @@ parser code {:
 :}
 
 /* Terminals */
-terminal String     SEPARATOR, COLON, SEMICOLON, FULLSTOP, ID, NAME, VERSION, AUTHOR, RELEASE, EXTENSION, CODE, SPECIALCHARACTER, QUESTIONMARK, ASTERISK, PLUS, VERTICALBAR, MACRONUMBERS, MACROLETTERS,
-                    LINEBREAK, TAB, BLANKSPACE, DOUBLEQUOTES, CURLYBRACKETO, CURLYBRACKETC, SQUAREBRACKETO, SQUAREBRACKETC, IGNORE, EQUALS, CHARACTER;
+terminal String     SEPARATOR, COLON, SEMICOLON, FULLSTOP, ID, NAME, VERSION, AUTHOR, RELEASE, EXTENSION, CODE, SPECIALCHARACTER, MACRONUMBERS, MACROLETTERSMAY, MACROLETTERSMIN, CHARACTER, QUESTIONMARK, ASTERISK, 
+                    PLUS, VERTICALBAR, LINEBREAK, TAB, BLANKSPACE, DOUBLEQUOTES, PARENTHESESO, PARENTHESESC, SQUAREBRACKETO, SQUAREBRACKETC, IGNORE, EQUALS;
 terminal Integer    INTEGERNUM;
 
 /* Non-terminals */
-non terminal            s, regularExpresions, expresion;
-non terminal String     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode;
-non terminal Integer    languageRelease;
-non terminal Language   languageInformation;
+non terminal                            s;
+non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode, character, expCharacter;
+non terminal Integer                    languageRelease;
+non terminal Language                   languageInformation;
+non terminal Node                       binaryOperation, unitaryOperation, characters, expresion;                     
+non terminal LinkedList<Instruction>    regularExpresions;
 
 /* The grammar */
 start with s;
 
-s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regularExpresions SEPARATOR{: if(language.getName().equals("")){ print("Error Semantico: No se encontro ningun nombre para el lenguaje");} language.setSourceCode(code); if(language.getSourceCode().isBlank()){language.setSourceCode("");} System.out.println(language.getSourceCode()); :}
-        | languageInformation:language SEPARATOR SEPARATOR regularExpresions SEPARATOR{: if(language.getName().equals("")) { print("Error Semantico: No se encontro ningun nombre para el lenguaje");} System.out.println(language.getSourceCode()); :}
+s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regularExpresions:regularExpresions SEPARATOR{: 
+            if(language.getName().equals("")){ 
+                print("Error Semantico: No se encontro ningun nombre para el lenguaje");
+            } 
+            language.setSourceCode(code); 
+            if(language.getSourceCode().isBlank()){
+                language.setSourceCode("");
+            }
+            System.out.println(language.getSourceCode()); 
+            new LexerCreator(regularExpresions).execute(null);
+        :}
+        | languageInformation:language SEPARATOR SEPARATOR regularExpresions:regularExpresions SEPARATOR{:
+            if(language.getName().equals("")){
+                print("Error Semantico: No se encontro ningun nombre para el lenguaje");
+            } 
+            System.out.println(language.getSourceCode());
+            new LexerCreator(regularExpresions).execute(null);
+        :}
         ;
 
 
 //--------------------------------  LANGUAGE INFORMATION SECTION --------------------------------//
 
-languageInformation::=  languageName:name languageInformation:language {: language.setName(name); RESULT = language; :}
-                        | languageVersion:version languageInformation:language {: language.setVersion(version); RESULT = language; :}
-                        | languageAutor:author languageInformation:language {: language.setAuthor(author); RESULT = language; :}
-                        | languageRelease:value languageInformation:language {: language.setRelease(value); RESULT = language; :}
-                        | languageExtension:extension languageInformation:language {: language.setExtension(extension); RESULT = language; :}
-                        | languageName:name {: RESULT = new Language(name, "", "", -1, ""); :}
-                        | languageVersion:version {: RESULT = new Language("", version, "", -1, ""); :}
-                        | languageAutor:author  {: RESULT = new Language("", "", author, -1, ""); :}
-                        | languageRelease:value {: RESULT = new Language("", "", "", value, ""); :}
-                        | languageExtension:extension {: RESULT = new Language("", "", "", -1, extension); :}
+languageInformation::=  languageName:name languageInformation:language              {: language.setName(name); RESULT = language; :}
+                        | languageVersion:version languageInformation:language      {: language.setVersion(version); RESULT = language; :}
+                        | languageAutor:author languageInformation:language         {: language.setAuthor(author); RESULT = language; :}
+                        | languageRelease:value languageInformation:language        {: language.setRelease(value); RESULT = language; :}
+                        | languageExtension:extension languageInformation:language  {: language.setExtension(extension); RESULT = language; :}
+                        | languageName:name             {: RESULT = new Language(name, "", "", -1, ""); :}
+                        | languageVersion:version       {: RESULT = new Language("", version, "", -1, ""); :}
+                        | languageAutor:author          {: RESULT = new Language("", "", author, -1, ""); :}
+                        | languageRelease:value         {: RESULT = new Language("", "", "", value, ""); :}
+                        | languageExtension:extension   {: RESULT = new Language("", "", "", -1, extension); :}
                         ;
 
 languageName::=     NAME COLON ID:name SEMICOLON {: RESULT = name; :} 
@@ -72,10 +98,10 @@ version::=    INTEGERNUM:value FULLSTOP version:previousValue {: RESULT = value.
 languageAutor::=    AUTHOR COLON author:name SEMICOLON {: RESULT = name; :}
                     ;
 
-author::=   ID:name author:previousName {: RESULT = name +" "+ previousName; :}
-            | INTEGERNUM:value author:previousName {: RESULT = value.toString() +" "+ previousName; :}
-            | ID: name {: RESULT = name; :}
-            | INTEGERNUM:value {: RESULT = value.toString(); :}
+author::=   ID:name author:previousName             {: RESULT = name +" "+ previousName; :}
+            | INTEGERNUM:value author:previousName  {: RESULT = value.toString() +" "+ previousName; :}
+            | ID: name          {: RESULT = name; :}
+            | INTEGERNUM:value  {: RESULT = value.toString(); :}
             ;
 
 languageRelease::=      RELEASE COLON INTEGERNUM:value SEMICOLON {: RESULT = value; :}
@@ -87,21 +113,87 @@ languageExtension::=    EXTENSION COLON ID:extension SEMICOLON {: RESULT = exten
 
 //--------------------------------  SOURCE CODE SECTION --------------------------------//
 
-sourceCode::=   CODE:code sourceCode:previousCode {: RESULT = code + previousCode; :}
+sourceCode::=   CODE:code sourceCode:previousCode                    {: RESULT = code + previousCode; :}
                 | SPECIALCHARACTER:character sourceCode:previousCode {: RESULT = character + previousCode; :}
-                | CODE:code {: RESULT = code; :}
+                | CODE:code                  {: RESULT = code; :}
                 | SPECIALCHARACTER:character {: RESULT = character; :}
                 ;
 
 
 //--------------------------------  REGULAR EXPRESIONS SECTION --------------------------------//
 
-regularExpresions::=    ID EQUALS expresion SEMICOLON regularExpresions
-                        | IGNORE EQUALS expresion SEMICOLON regularExpresions
-                        | ID EQUALS expresion SEMICOLON
-                        | IGNORE EQUALS expresion SEMICOLON
+regularExpresions::=    ID:id EQUALS expresion:root SEMICOLON regularExpresions:list {: RESULT = list; RESULT.add(new RegularExpresion(id, root)); :}
+                        | IGNORE EQUALS expresion SEMICOLON regularExpresions:list   {: RESULT = list; :}
+                        | ID:id EQUALS expresion:root SEMICOLON                      {: RESULT = new LinkedList<>(); RESULT.add(new RegularExpresion(id, root)); :}
+                        | IGNORE EQUALS expresion SEMICOLON                          {: RESULT = new LinkedList<>(); :}
                         ;
 
-expresion::=    QUESTIONMARK;
-                        
+expresion::=    expresion:leftNode binaryOperation:parentNode PARENTHESESO expresion:node PARENTHESESC unitaryOperation:rightNode       {: RESULT = nodesDriver.createMultiEdge(node, leftNode, parentNode, rightNode); :} 
+                | expresion:leftNode binaryOperation:parentNode SQUAREBRACKETO expresion:node SQUAREBRACKETC unitaryOperation:rightNode {: RESULT = nodesDriver.createMultiEdge(node, leftNode, parentNode, rightNode); :} 
+  
+                | expresion:leftNode binaryOperation:parentNode PARENTHESESO expresion:rightNode PARENTHESESC       {: RESULT = nodesDriver.createBinaryEdge(leftNode, parentNode, rightNode); :} 
+                | expresion:leftNode binaryOperation:parentNode SQUAREBRACKETO expresion:rightNode SQUAREBRACKETC {: RESULT = nodesDriver.createBinaryEdge(leftNode, parentNode, rightNode); :} 
+                 
+                | PARENTHESESO expresion:leftNode PARENTHESESC unitaryOperation:parentNode     {: RESULT = nodesDriver.createUnitaryEdge(leftNode, parentNode); :}
+                | SQUAREBRACKETO expresion:leftNode SQUAREBRACKETC unitaryOperation:parentNode {: RESULT = nodesDriver.createUnitaryEdge(leftNode, parentNode); :}
 
+                | PARENTHESESO expresion:node PARENTHESESC     {: RESULT = node; :}
+                | SQUAREBRACKETO expresion:node SQUAREBRACKETC {: RESULT = node; :}
+
+                | expresion:leftNode binaryOperation:parentNode expCharacter:value unitaryOperation:rightNode       {: RESULT = nodesDriver.createMultiNode(value, leftNode, parentNode, rightNode); :}                                    
+                | expresion:leftNode binaryOperation:parentNode MACRONUMBERS:interval unitaryOperation:rightNode {: RESULT = nodesDriver.createMultiEdge(nodesDriver.createMacroNode(interval), leftNode, parentNode, rightNode); :}   
+                | expresion:leftNode binaryOperation:parentNode MACROLETTERSMAY:interval unitaryOperation:rightNode {: RESULT = nodesDriver.createMultiEdge(nodesDriver.createMacroNode(interval), leftNode, parentNode, rightNode); :}   
+                | expresion:leftNode binaryOperation:parentNode MACROLETTERSMIN:interval unitaryOperation:rightNode {: RESULT = nodesDriver.createMultiEdge(nodesDriver.createMacroNode(interval), leftNode, parentNode, rightNode); :}
+                | expresion:leftNode binaryOperation:parentNode DOUBLEQUOTES characters:node DOUBLEQUOTES unitaryOperation:rightNode {: RESULT = nodesDriver.createMultiEdge(node, leftNode, parentNode, rightNode); :} 
+
+                | expresion:leftNode binaryOperation:parentNode expCharacter:value       {: RESULT = nodesDriver.createBinaryNode(value, parentNode, leftNode); :}                                    
+                | expresion:leftNode binaryOperation:parentNode MACRONUMBERS:interval {: RESULT = nodesDriver.createBinaryEdge(leftNode, parentNode, nodesDriver.createMacroNode(interval)); :}                
+                | expresion:leftNode binaryOperation:parentNode MACROLETTERSMAY:interval {: RESULT = nodesDriver.createBinaryEdge(leftNode, parentNode, nodesDriver.createMacroNode(interval)); :}    
+                | expresion:leftNode binaryOperation:parentNode MACROLETTERSMIN:interval {: RESULT = nodesDriver.createBinaryEdge(leftNode, parentNode, nodesDriver.createMacroNode(interval)); :} 
+                | expresion:leftNode binaryOperation:parentNode DOUBLEQUOTES characters:rightNode DOUBLEQUOTES {: RESULT = nodesDriver.createBinaryEdge(leftNode, parentNode, rightNode); :} 
+
+                | expCharacter:value unitaryOperation:parentNode       {: RESULT = nodesDriver.createUnitaryNode(value, parentNode); :}            
+                | MACRONUMBERS:interval unitaryOperation:parentNode {: RESULT = nodesDriver.createUnitaryEdge(nodesDriver.createMacroNode(interval), parentNode); :}                
+                | MACROLETTERSMAY:interval unitaryOperation:parentNode {: RESULT = nodesDriver.createUnitaryEdge(nodesDriver.createMacroNode(interval), parentNode); :}  
+                | MACROLETTERSMIN:interval unitaryOperation:parentNode {: RESULT = nodesDriver.createUnitaryEdge(nodesDriver.createMacroNode(interval), parentNode); :}
+                | DOUBLEQUOTES characters:leftNode DOUBLEQUOTES unitaryOperation:parentNode {: RESULT = nodesDriver.createUnitaryEdge(leftNode, parentNode); :}
+
+                | expCharacter:value  {: RESULT = new Node(value, true); :}
+                | MACRONUMBERS:interval {: RESULT = nodesDriver.createMacroNode(interval); :}                        
+                | MACROLETTERSMAY:interval {: RESULT = nodesDriver.createMacroNode(interval); :}
+                | MACROLETTERSMIN:interval {: RESULT = nodesDriver.createMacroNode(interval); :}
+                | DOUBLEQUOTES characters:node DOUBLEQUOTES {: RESULT = node; :}
+                ;
+                
+expCharacter::=     CHARACTER:value     {: RESULT = value; :}
+                    | LINEBREAK:value   {: RESULT = value; :}
+                    | TAB:value         {: RESULT = value; :}
+                    | BLANKSPACE:value  {: RESULT = value; :}
+                    ;
+
+binaryOperation::=  VERTICALBAR {: RESULT = new Node("|", false); :}
+                    | {: RESULT = new Node(".", false); :} 
+                    ;
+
+unitaryOperation::=     QUESTIONMARK {: RESULT = new Node("?", false); :}
+                        | ASTERISK   {: RESULT = new Node("*", false); :}      
+                        | PLUS       {: RESULT = new Node("+", false); :}          
+                        ;
+
+characters::=   characters:leftNode character:value  {: RESULT = nodesDriver.createConcatNode(value, leftNode); :}
+                | character:value                    {: RESULT = new Node(value, true); :}       
+                ;
+
+character::=     CHARACTER:value       {: RESULT = value; :}
+                | QUESTIONMARK:value    {: RESULT = value; :}    
+                | ASTERISK:value        {: RESULT = value; :}
+                | PLUS:value            {: RESULT = value; :}
+                | VERTICALBAR:value     {: RESULT = value; :}
+                | LINEBREAK:value       {: RESULT = value; :}
+                | TAB:value             {: RESULT = value; :}
+                | BLANKSPACE:value      {: RESULT = value; :}
+                | PARENTHESESO:value    {: RESULT = value; :}
+                | PARENTHESESC:value    {: RESULT = value; :}
+                | SQUAREBRACKETO:value  {: RESULT = value; :}
+                | SQUAREBRACKETC:value  {: RESULT = value; :} 
+                ;

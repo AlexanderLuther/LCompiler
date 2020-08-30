@@ -4,6 +4,7 @@ import com.hluther.controlClasses.FileChoosersDriver;
 import com.hluther.controlClasses.AnalysisDriver;
 import com.hluther.controlClasses.FilesDriver;
 import com.hluther.controlClasses.ThreadsDriver;
+import com.hluther.controlClasses.NodesDriver;
 import com.hluther.entityClasses.Tab;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private FileChoosersDriver fileChoosersCreator = new FileChoosersDriver(filesDriver);
     private AnalysisDriver analysisDriver = new AnalysisDriver();
     private ThreadsDriver threadsDriver = new ThreadsDriver();
+    private NodesDriver treeDriver = new NodesDriver();
     private ArrayList<Tab> tabs = new ArrayList<>();
     private final String DEFAULTNAME = "Untitle";
     private Tab tab;
@@ -713,7 +715,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
 
     private void uploadMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadMenuActionPerformed
         try{
-            analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this);
+            analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this, treeDriver);
         } catch(NullPointerException e){
             informationLabel.setText("Carga de lenguaje cancelada.");
             threadsDriver.clearLabel(informationLabel);
