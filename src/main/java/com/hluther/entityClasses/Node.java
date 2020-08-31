@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 public class Node {
     
-    private String value;
+    private int asciiValue;
     private Node left;
     private Node right;
     private int id;
@@ -18,8 +18,8 @@ public class Node {
     private ArrayList<Integer> nextPos;
     private boolean leaf;
 
-    public Node(String value, Node left, Node right, boolean leaf) {
-        this.value = value;
+    public Node(int asciiValue, Node left, Node right, boolean leaf) {
+        this.asciiValue = asciiValue;
         this.left = left;
         this.right = right;
         this.leaf = leaf;
@@ -30,8 +30,8 @@ public class Node {
         }
     }
 
-    public Node(String value, boolean leaf) {
-        this.value = value;
+    public Node(int asciiValue, boolean leaf) {
+        this.asciiValue = asciiValue;
         this.left = null;
         this.right = null;
         this.leaf = leaf;
@@ -42,12 +42,12 @@ public class Node {
         }
     }
     
-    public String getValue() {
-        return value;
+    public int getAsciiValue() {
+        return asciiValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setAsciiValue(int asciiValue) {
+        this.asciiValue = asciiValue;
     }
 
     public Node getLeft() {

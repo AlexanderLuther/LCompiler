@@ -5,6 +5,7 @@ import com.hluther.gui.LCompilerFrame;
 import com.hluther.interpreter.lexer.Lexer;
 import com.hluther.entityClasses.Language;
 import com.hluther.entityClasses.Node;
+import com.hluther.entityClasses.LLexer;
 import com.hluther.controlClasses.NodesDriver;
 import com.hluther.interpreter.AST.Instruction;
 import com.hluther.interpreter.AST.RegularExpresion;
@@ -41,8 +42,8 @@ terminal Integer    INTEGERNUM;
 
 /* Non-terminals */
 non terminal                            s;
-non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode, character, expCharacter;
-non terminal Integer                    languageRelease;
+non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode;
+non terminal Integer                    languageRelease, character, expCharacter;
 non terminal Language                   languageInformation;
 non terminal Node                       binaryOperation, unitaryOperation, characters, expresion;                     
 non terminal LinkedList<Instruction>    regularExpresions;
@@ -59,14 +60,14 @@ s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regular
                 language.setSourceCode("");
             }
             System.out.println(language.getSourceCode()); 
-            new LexerCreator(regularExpresions).execute(null);
+            lCompilerFrame.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null));
         :}
         | languageInformation:language SEPARATOR SEPARATOR regularExpresions:regularExpresions SEPARATOR{:
             if(language.getName().equals("")){
                 print("Error Semantico: No se encontro ningun nombre para el lenguaje");
             } 
             System.out.println(language.getSourceCode());
-            new LexerCreator(regularExpresions).execute(null);
+            lCompilerFrame.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null));
         :}
         ;
 
@@ -122,12 +123,12 @@ sourceCode::=   CODE:code sourceCode:previousCode                    {: RESULT =
 
 //--------------------------------  REGULAR EXPRESIONS SECTION --------------------------------//
 
-regularExpresions::=    ID:id EQUALS expresion:root SEMICOLON regularExpresions:list {: RESULT = list; RESULT.add(new RegularExpresion(id, root)); :}
-                        | IGNORE EQUALS expresion SEMICOLON regularExpresions:list   {: RESULT = list; :}
-                        | ID:id EQUALS expresion:root SEMICOLON                      {: RESULT = new LinkedList<>(); RESULT.add(new RegularExpresion(id, root)); :}
-                        | IGNORE EQUALS expresion SEMICOLON                          {: RESULT = new LinkedList<>(); :}
+regularExpresions::=    ID:id EQUALS expresion:root SEMICOLON regularExpresions:list    {: RESULT = list; RESULT.add(new RegularExpresion(id, root, false)); :}
+                        | IGNORE EQUALS expresion:root SEMICOLON regularExpresions:list {: RESULT = list; RESULT.add(new RegularExpresion("Ignore", root, true)); :}
+                        | ID:id EQUALS expresion:root SEMICOLON                         {: RESULT = new LinkedList<>(); RESULT.add(new RegularExpresion(id, root, false)); :}
+                        | IGNORE EQUALS expresion:root SEMICOLON                        {: RESULT = new LinkedList<>(); RESULT.add(new RegularExpresion("Ignore", root, true)); :}
                         ;
-
+                        
 expresion::=    expresion:leftNode binaryOperation:parentNode PARENTHESESO expresion:node PARENTHESESC unitaryOperation:rightNode       {: RESULT = nodesDriver.createMultiEdge(node, leftNode, parentNode, rightNode); :} 
                 | expresion:leftNode binaryOperation:parentNode SQUAREBRACKETO expresion:node SQUAREBRACKETC unitaryOperation:rightNode {: RESULT = nodesDriver.createMultiEdge(node, leftNode, parentNode, rightNode); :} 
   
@@ -165,35 +166,35 @@ expresion::=    expresion:leftNode binaryOperation:parentNode PARENTHESESO expre
                 | DOUBLEQUOTES characters:node DOUBLEQUOTES {: RESULT = node; :}
                 ;
                 
-expCharacter::=     CHARACTER:value     {: RESULT = value; :}
-                    | LINEBREAK:value   {: RESULT = value; :}
-                    | TAB:value         {: RESULT = value; :}
-                    | BLANKSPACE:value  {: RESULT = value; :}
+expCharacter::=     CHARACTER:value {: RESULT = (int)value.charAt(0);; :}
+                    | LINEBREAK     {: RESULT = (int)"\n".charAt(0); :}
+                    | TAB           {: RESULT = (int)"\t".charAt(0); :}
+                    | BLANKSPACE    {: RESULT = (int)" ".charAt(0); :}
                     ;
 
-binaryOperation::=  VERTICALBAR {: RESULT = new Node("|", false); :}
-                    | {: RESULT = new Node(".", false); :} 
+binaryOperation::=  VERTICALBAR {: RESULT = new Node((int)'|', false); :}
+                    | {: RESULT = new Node((int)'.', false); :} 
                     ;
 
-unitaryOperation::=     QUESTIONMARK {: RESULT = new Node("?", false); :}
-                        | ASTERISK   {: RESULT = new Node("*", false); :}      
-                        | PLUS       {: RESULT = new Node("+", false); :}          
+unitaryOperation::=     QUESTIONMARK {: RESULT = new Node((int)'?', false); :}
+                        | ASTERISK   {: RESULT = new Node((int)'*', false); :}      
+                        | PLUS       {: RESULT = new Node((int)'+', false); :}          
                         ;
 
 characters::=   characters:leftNode character:value  {: RESULT = nodesDriver.createConcatNode(value, leftNode); :}
                 | character:value                    {: RESULT = new Node(value, true); :}       
                 ;
 
-character::=     CHARACTER:value       {: RESULT = value; :}
-                | QUESTIONMARK:value    {: RESULT = value; :}    
-                | ASTERISK:value        {: RESULT = value; :}
-                | PLUS:value            {: RESULT = value; :}
-                | VERTICALBAR:value     {: RESULT = value; :}
-                | LINEBREAK:value       {: RESULT = value; :}
-                | TAB:value             {: RESULT = value; :}
-                | BLANKSPACE:value      {: RESULT = value; :}
-                | PARENTHESESO:value    {: RESULT = value; :}
-                | PARENTHESESC:value    {: RESULT = value; :}
-                | SQUAREBRACKETO:value  {: RESULT = value; :}
-                | SQUAREBRACKETC:value  {: RESULT = value; :} 
+character::=     CHARACTER:value        {: RESULT = (int)value.charAt(0); :}
+                | QUESTIONMARK:value    {: RESULT = (int)value.charAt(0); :}    
+                | ASTERISK:value        {: RESULT = (int)value.charAt(0); :}
+                | PLUS:value            {: RESULT = (int)value.charAt(0); :}
+                | VERTICALBAR:value     {: RESULT = (int)value.charAt(0); :}
+                | LINEBREAK             {: RESULT = (int)"\n".charAt(0); :}
+                | TAB                   {: RESULT = (int)"\t".charAt(0); :}
+                | BLANKSPACE            {: RESULT = (int)" ".charAt(0); :}
+                | PARENTHESESO:value    {: RESULT = (int)value.charAt(0); :}
+                | PARENTHESESC:value    {: RESULT = (int)value.charAt(0); :}
+                | SQUAREBRACKETO:value  {: RESULT = (int)value.charAt(0); :}
+                | SQUAREBRACKETC:value  {: RESULT = (int)value.charAt(0); :} 
                 ;

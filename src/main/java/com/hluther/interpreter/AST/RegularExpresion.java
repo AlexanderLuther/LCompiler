@@ -1,8 +1,8 @@
 package com.hluther.interpreter.AST;
 
 import com.hluther.controlClasses.TreeMethodDriver;
+import com.hluther.entityClasses.DeterministicFiniteAutomaton;
 import com.hluther.entityClasses.Node;
-import java.util.ArrayList;
 /**
  *
  * @author helmuth
@@ -11,17 +11,20 @@ public class RegularExpresion implements Instruction{
         
     private String id;
     private Node regularExpresion;    
+    private boolean ignore;
     private TreeMethodDriver treeMethod;
     private Node root;
+    private DeterministicFiniteAutomaton dfa;
     
     /**
      * Constructor de la clase
      * @param id Identificador de la expresion regular declarada.
      * @param regularExpresion arbol binario que contiene la estructura de la expresion regular.
      */
-    public RegularExpresion(String id, Node regularExpresion){
+    public RegularExpresion(String id, Node regularExpresion, boolean ignore){
         this.id = id;
         this.regularExpresion = regularExpresion;
+        this.ignore = ignore;
         this.treeMethod = new TreeMethodDriver();
     }
       
@@ -37,10 +40,13 @@ public class RegularExpresion implements Instruction{
         //Calcular anulable, primeraPos, ultimaPos y siguientePos
         treeMethod.calculateLeafNodes(root);
         treeMethod.calculateBranchNodes(root);      
-        //Obtener el AFD resultante.
-        System.out.println("\nArbol: " +id);
-        treeMethod.getAFD(root);      
-        return null;
+        //Obtener y retornar el AFD resultante.
+        dfa = treeMethod.getAFD(root);
+        dfa.setId(id);
+        dfa.setIgnore(ignore);
+        //Liberar memoria
+        System.gc();
+        return dfa;
     }   
   
 }

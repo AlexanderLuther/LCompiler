@@ -5,6 +5,7 @@ import com.hluther.controlClasses.AnalysisDriver;
 import com.hluther.controlClasses.FilesDriver;
 import com.hluther.controlClasses.ThreadsDriver;
 import com.hluther.controlClasses.NodesDriver;
+import com.hluther.entityClasses.LLexer;
 import com.hluther.entityClasses.Tab;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +30,14 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private Tab tab;
     private int counter = 1;
     private int selectedPane = -1;
+    
+    
+    private LLexer lexer;
+    
+    public void setLexer(LLexer lexer){
+        this.lexer = lexer;
+    }
+    
    
     public LCompilerFrame() {
         this.setExtendedState(MAXIMIZED_BOTH);
@@ -584,12 +593,17 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jMenu1.setText("Ejecutar");
         jMenu1.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
 
-        compileMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        compileMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         compileMenu.setBackground(new java.awt.Color(48, 50, 55));
         compileMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 12)); // NOI18N
         compileMenu.setForeground(new java.awt.Color(255, 255, 255));
         compileMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/compile.png"))); // NOI18N
         compileMenu.setText("Compilar");
+        compileMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                compileMenuActionPerformed(evt);
+            }
+        });
         jMenu1.add(compileMenu);
         jMenu1.add(jSeparator1);
 
@@ -716,6 +730,8 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private void uploadMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadMenuActionPerformed
         try{
             analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this, treeDriver);
+            compileButton.setEnabled(true);
+            compileMenu.setEnabled(true);
         } catch(NullPointerException e){
             informationLabel.setText("Carga de lenguaje cancelada.");
             threadsDriver.clearLabel(informationLabel);
@@ -725,6 +741,19 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
 
     }//GEN-LAST:event_compileButtonActionPerformed
+
+    private void compileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileMenuActionPerformed
+        if(lexer == null){
+            System.out.println("Vacio");
+        }
+        else{
+            try{
+                lexer.getTokens(tabs.get(selectedPane).getText());
+            } catch(IndexOutOfBoundsException e){
+                printMessage("No ninguna pestana abierta para realizar el analisis.");
+            }    
+        }
+    }//GEN-LAST:event_compileMenuActionPerformed
 
     /**
      * @param args the command line arguments

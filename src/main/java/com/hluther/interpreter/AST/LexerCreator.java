@@ -1,4 +1,6 @@
 package com.hluther.interpreter.AST;
+import com.hluther.entityClasses.DeterministicFiniteAutomaton;
+import com.hluther.entityClasses.LLexer;
 import java.util.LinkedList;
 
 /**
@@ -8,42 +10,29 @@ import java.util.LinkedList;
  */
 public class LexerCreator implements Instruction{
 
-    private final LinkedList<Instruction> instructionsList;
+    private final LinkedList<Instruction> regularExpresions;
+    private final LinkedList<DeterministicFiniteAutomaton> automata = new LinkedList<>();
     
     /**
-     * Primer constructor de la clase, este se utiliza cuando la instrucción no 
-     * tiene clausula ELSE.
-     * @param condition Condición del si..entonces
-     * @param instructionsList Lista de instrucciones que deberían ejecutarse si la condición se cumple
+     * Constructor de la clase.
+     * @param regularExpresions Lista de expresiones regulares.
      */
-    public LexerCreator(LinkedList<Instruction> instructionsList) {
-        this.instructionsList = instructionsList;
+    public LexerCreator(LinkedList<Instruction> regularExpresions) {
+        this.regularExpresions = regularExpresions;
     }
     
     /**
-     * Método que ejecuta la instrucción si..entonces, es una sobreescritura del 
-     * método ejecutar que se debe programar por la implementación de la interfaz
-     * instrucción
+     * Método que ejecuta la instruccion de cada expresion regular recibida y obtiene
+     * el AFD resultante. Guarda en un ArrayList los AFD's y crea una nueva instancia 
+     * de la clase Lexer.
      * @param symbolTable tabla de símbolos del ámbito padre de la sentencia.
-     * @return Estra instrucción retorna nulo porque no produce ningún valor en 
-     * su ejecución
+     * @return Estra instrucción retorna el LLexer creado.
      */
     @Override
     public Object execute(SymbolTable symbolTable) {
-        for(Instruction inst: instructionsList){
-            inst.execute(symbolTable);
+        for(Instruction inst: regularExpresions){
+            automata.addFirst((DeterministicFiniteAutomaton)inst.execute(symbolTable));
         }
-        
-        
-         /*   if(instructionsList != null){
-                SymbolTable localTable = new SymbolTable();
-                localTable.addAll(symbolTable);
-                for(int i = instructionsList.size() -1; i >= 0; i--){
-                    instructionsList.get(i).execute(localTable);
-                }
-                
-            }*/
-        
-        return null;
+        return new LLexer(automata);
     }
 }

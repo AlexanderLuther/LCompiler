@@ -1,8 +1,8 @@
 package com.hluther.controlClasses;
 
+import com.hluther.entityClasses.DeterministicFiniteAutomaton;
 import com.hluther.entityClasses.Node;
 import com.hluther.entityClasses.State;
-import com.hluther.entityClasses.Transition;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 public class TreeMethodDriver {
         
     private Hashtable<Integer, Node> leafNodes = new Hashtable<>();
-    private ArrayList<String> symbols = new ArrayList<>();
+    private ArrayList<Integer> symbols = new ArrayList<>();
     private final char SPECIAL_SYMBOL = 254;
     private int leafNodesCounter = 0;
     private ArrayList[] nextPos;
@@ -33,8 +33,8 @@ public class TreeMethodDriver {
      * @return root raiz del arbol de sintexis abstracta. 
      */
     public Node expandTree(Node regularExpresion){
-        Node rightNode = new Node(String.valueOf(SPECIAL_SYMBOL), true);
-        Node root = new Node(".", regularExpresion, rightNode, false);
+        Node rightNode = new Node(SPECIAL_SYMBOL, true);
+        Node root = new Node((int)'.', regularExpresion, rightNode, false);
         return root;
     }
     
@@ -51,7 +51,7 @@ public class TreeMethodDriver {
                 root.setId(leafNodesCounter);
                 root.addFirstPos(leafNodesCounter);
                 root.addLastPos(leafNodesCounter);
-                addSymbol(root.getValue());
+                addSymbol(root.getAsciiValue());
                 leafNodes.put(leafNodesCounter, root);
                 leafNodesCounter++;
             }
@@ -72,14 +72,14 @@ public class TreeMethodDriver {
            calculateBranchNodes(root.getLeft());
            calculateBranchNodes(root.getRight()); 
             if(!root.isLeaf()){ 
-                switch(root.getValue()){
-                    case "|": 
+                switch((char)root.getAsciiValue()){
+                    case '|': 
                         root.setNullable(root.getLeft().isNullable() || root.getRight().isNullable());
                         root.setFirstPos((ArrayList)Stream.concat(root.getLeft().getFirstPos().stream(), root.getRight().getFirstPos().stream()).collect(Collectors.toList()));
                         root.setLastPos((ArrayList)Stream.concat(root.getLeft().getLastPos().stream(), root.getRight().getLastPos().stream()).collect(Collectors.toList()));
                         break;
                         
-                    case ".": 
+                    case '.': 
                         root.setNullable(root.getLeft().isNullable() && root.getRight().isNullable());
                         if(root.getLeft().isNullable()){ 
                             root.setFirstPos((ArrayList)Stream.concat(root.getLeft().getFirstPos().stream(), root.getRight().getFirstPos().stream()).collect(Collectors.toList()));
@@ -94,20 +94,20 @@ public class TreeMethodDriver {
                         calculateNextPos(root.getRight().getFirstPos(), root.getLeft().getLastPos());
                         break;
                     
-                    case "*": 
+                    case '*': 
                         root.setNullable(true); 
                         root.setFirstPos(root.getLeft().getFirstPos());
                         root.setLastPos(root.getLeft().getLastPos());
                         calculateNextPos(root.getFirstPos(), root.getLastPos());
                         break;
                         
-                    case "?": 
+                    case '?': 
                         root.setNullable(true); 
                         root.setFirstPos(root.getLeft().getFirstPos());
                         root.setLastPos(root.getLeft().getLastPos());
                         break;
                     
-                    case "+": 
+                    case '+': 
                         root.setNullable(root.getLeft().isNullable()); 
                         root.setFirstPos(root.getLeft().getFirstPos());
                         root.setLastPos(root.getLeft().getLastPos());
@@ -159,10 +159,11 @@ public class TreeMethodDriver {
      * Algoritmo para el calculo del AFD
      * @param root raiz del arbol de sintaxis abstracta.
      */
-    public void getAFD(Node root){
+    public DeterministicFiniteAutomaton getAFD(Node root){
+        //Tabla de transiciones
+        ArrayList<State[]> transitionsTable = new ArrayList<>();
         //ArrayLists y State usados en el algoritmo
-        ArrayList<Integer> containedNodes = new ArrayList<>();
-        ArrayList<Transition> transitions = new ArrayList<>();
+        ArrayList<Integer> containedNodes;
         State currentState;
         State tempState;
         //Crear el conjunto vacio estadosD = {}
@@ -171,6 +172,8 @@ public class TreeMethodDriver {
         statesD.add(new State(statesCounter, root.getFirstPos(), false, true, false));
         //Mientras exista un conjunto de estado currentState sin marcar en estadosD hacer
         while((currentState = getUnmarkedState(statesD)) != null){
+            //Agregar el nuevo estado a la tabla de transiciones.
+            transitionsTable.add(new State[symbols.size()]);
             //Marcar currentState
             currentState.setMarkedState(true);
             //Por cada simbolo de entrada hacer
@@ -185,26 +188,19 @@ public class TreeMethodDriver {
                     if(isNewState(statesD, tempState.getNodes())){
                         statesD.add(tempState);
                     }
-                    //Agregar una transicion del estado actual al estado contenido en tempState.
-                    transitions.add(new Transition(currentState.getId(), tempState.getId(), symbols.get(i)));
+                    //Agregar una transicion del estado actual al estado contenido en tempState.    
+                    transitionsTable.get(currentState.getId())[i] = tempState;
                 }
                 //Agregar una transicion no definida.      
                 else{
-                    transitions.add(new Transition(currentState.getId(), Integer.MAX_VALUE, symbols.get(i)));
+                    transitionsTable.get(currentState.getId())[i] = new State(-1, null, false, false, false);
                 }
             }   
         }
         //Establecer estados finales.
-        statesD = setFinalStates(statesD);
-     
-        System.out.println("Estados: " +statesD.size());
-        for(State state : statesD){
-            System.out.println(state.getId() +" "+ state.isFinalState());
-        }
-        System.out.println("Transiciones: " +transitions.size());
-        for(int i = 0; i < transitions.size(); i++){
-            System.out.println("D(" +transitions.get(i).getInitialState() +","+ transitions.get(i).getSymbol() +") = "+ transitions.get(i).getFinalState());
-        }
+        setFinalStates(statesD);
+        //Crear y retornar el AFD resultante.
+        return new DeterministicFiniteAutomaton(transitionsTable, symbols, statesD.get(0));
     }
     
     /**
@@ -225,8 +221,8 @@ public class TreeMethodDriver {
      * Metodo que agrega al ArrayList symbols un nuevo simbolo usado en la expreion regular.
      * @param symbol Simbolo que se desea agregar.
      */
-    private void addSymbol(String symbol){
-        if(symbol.charAt(0) != (SPECIAL_SYMBOL) && !symbols.contains(symbol)){
+    private void addSymbol(int symbol){
+        if(symbol != (SPECIAL_SYMBOL) && !symbols.contains(symbol)){
             symbols.add(symbol);
         }
     }
@@ -238,13 +234,11 @@ public class TreeMethodDriver {
      * @param nodes Conjunto de nodos donde se debe de buscar.
      * @return containedNodes Conjunto de nodos encontrados.
      */
-    private ArrayList<Integer> getNodes(String symbol, ArrayList<Integer> nodes){
+    private ArrayList<Integer> getNodes(int symbol, ArrayList<Integer> nodes){
         ArrayList<Integer> containedNodes = new ArrayList<>();
-        for(Integer nodeId : nodes){ 
-            if(leafNodes.get(nodeId).getValue().equals(symbol)){
-                containedNodes.add(nodeId);
-            }
-        }
+        nodes.stream().filter(nodeId -> (leafNodes.get(nodeId).getAsciiValue() == symbol)).forEachOrdered(nodeId -> {
+            containedNodes.add(nodeId);
+        });
         return containedNodes;
     }
     
@@ -305,14 +299,7 @@ public class TreeMethodDriver {
      * @param statesD Estados del AFD
      * @return statesD Estados del AFD ya marcados.
      */
-    private ArrayList<State> setFinalStates(ArrayList<State> statesD){
-    /*    int nodeId = 0;
-        for (Node node : leafNodes.values()){
-            if(node.getValue().equals(SPECIAL_SYMBOL)){
-                nodeId = node.getId();
-            }
-        }
-      */  
+    private ArrayList<State> setFinalStates(ArrayList<State> statesD){ 
         for(State state : statesD){
             if(state.getNodes().contains(leafNodesCounter-1)){
                 state.setFinalState(true);
