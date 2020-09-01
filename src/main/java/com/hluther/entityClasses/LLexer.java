@@ -1,5 +1,4 @@
 package com.hluther.entityClasses;
-
 import java.util.LinkedList;
 /**
  *
@@ -8,119 +7,151 @@ import java.util.LinkedList;
 public class LLexer {
     
     private LinkedList<DeterministicFiniteAutomaton> automata = new LinkedList<>();
-    private LinkedList<Token> tokens;
-    private int selectedAutomaton = 0;
     private final char EOF = 03;
-    private int row = 1;
     private int column = 0;
+    private int row = 1;
     
     public LLexer(LinkedList<DeterministicFiniteAutomaton> automata){
         this.automata = automata;
     }
-    
+  
     /**
-     * Metodo encargado de realizar el analisis lexico.
-     * Recorre la cadena de entrada y la analiza con cada uno de los automatas
-     * disponibles, si algun automata devuelve un token es un lexema reconocido,
-     * de lo contrario se crea un token Error.
-     * @param data El texto que se desea analizar lexicamente.
-     * @return 
+     * Metodo encargado de: 
+     * 1. Agregar el simbolo EOF al string data que se recibe como parametro e inicializar
+     *    los automatas y lista de tokens.
+     * 2. Recorrer el texto de entrada caracter por caracter.
+     * 3. Analizar el caracter actual con cada uno de los automatas disponibles. Si el 
+     *    caracter actual es EOF se establece en false el valor del atributo valid de 
+     *    todos los automatas. De lo contrario si el atributo valid del automata actual
+     *    es true se analiza el caracter con este automata.
+     * 4. Si todos los automatas se encuentran con un valor valid = false se realiza el
+     *    proceso de creacion de un nuevo token. De lo contrario se incrementa en uno el
+     *    valor de index.
+     * 5. Si el lexema reconocido es valido continua con el proceso de creacion de un 
+     *    nuevo token. De lo contrario se crea un nuevo token Error.
+     * 6. Se recorren todos los automatas y se buscan aquellos que se encuentren en un 
+     *    estado final y no sean IGNORE, se crea un nuevo token del tipo que reconoce 
+     *    el automata y si otro automata reconocio un lexema con una longitud mas grande
+     *    que el lexema del token creado se crea un nuevo token con los parametros del 
+     *    automata en turno.
+     * 7. Si Token no es null(IGNORE) se agrega a la lista tokens y se inicializan todos
+     *    los automatas.
+     * @param data Cadena de texto a analizar.
+     * @return Lista enlazada de tokens resultantes.
      */
     public LinkedList<Token> getTokens(String data){
-        row = 1;
-        column = 0;
+        //--------------------  1   --------------------//
         data = data + EOF;
-        tokens = new LinkedList<>();
+        column = 0;
+        row = 1;
         int index = 0;
-        Token token;
-        DeterministicFiniteAutomaton currentAuatomaton = automata.get(selectedAutomaton);
-        currentAuatomaton.initializeAFD();
-         //Recorrer la cadena caracter por caracter.
+        LinkedList<Token> tokens = new LinkedList<>();
+        initializaeAutomata();
+        //--------------------  2   --------------------//
         while(index < data.length()){
-            try{
-                //Analizar el caracter actual con el automata actual.
-                token = currentAuatomaton.analize(data.charAt(index));
-                //Seguir en el automata actual y cambiar estados.
-                if(token == null){
-                    setRow(data.charAt(index));
-                    column++;
-                    index++;
+        //--------------------  3   --------------------//    
+            for(int i = 0; i < automata.size(); i++){
+                if((int)data.charAt(index) != EOF){
+                    if(automata.get(i).isActive()){
+                        automata.get(i).consume((int)data.charAt(index));
+                    }
                 }
-                //Lexema reconocido, agregar un nuevo token y reestablecer el automata a su estado inicial.
                 else{
-                    //Si el automata actual no corresponde a IGNORE se agrega el nuevo token.
-                    if(!currentAuatomaton.isIgnore()){
-                        token.setColumn(column - token.getLexeme().length());
-                        token.setRow(row);
-                        tokens.add(token);
-                    }
-                    //Regresar al automate inicial.
-                    selectedAutomaton = 0;
-                    currentAuatomaton = automata.get(selectedAutomaton);
-                    currentAuatomaton.initializeAFD();
-                    //Si el caracter actual es EOF avanzar en la cadena.
-                    if(data.charAt(index) == EOF){
-                        setRow(data.charAt(index));
-                        column++;
-                        index++;
-                    }
-                }
-             //Cambiar de automata.
-            } catch(LexemeException e){
-                selectedAutomaton++;
-                //Si aun no se ha probado con todos los automatas
-                if(selectedAutomaton < automata.size()){
-                    currentAuatomaton = automata.get(selectedAutomaton);
-                    currentAuatomaton.initializeAFD();
-                    lessRow(column-e.getValue(), column, data);
-                    index  = index - e.getValue();
-                    column = column - e.getValue();
-                }
-                //Si ya se probo con todos los automatas agregar Token error y reestablecer.
-                else{
-                    //Si el simbolo no es el de fin de cadena
-                    if(data.charAt(index) != EOF){
-                        tokens.add(new Token("Error", String.valueOf(data.charAt(index)), row, column));
-                        setRow(data.charAt(index));
-                        column++;
-                        index++;
-                        selectedAutomaton = 0;
-                        currentAuatomaton = automata.get(selectedAutomaton);
-                        currentAuatomaton.initializeAFD();
-                    }
-                    else{
-                        setRow(data.charAt(index));
-                        column++;
-                        index++;
-                        selectedAutomaton = 0;
-                    }
+                    automata.get(i).setActive(false);
                 }
             }
-        }
-        
-        
+        //--------------------  4   --------------------//
+            if(allAutamataInactive()){
+        //--------------------  5   --------------------//        
+                if(isValidLexeme()){
+        //--------------------  6   --------------------//    
+                    Token token = null;
+                    int currentLength = 0;
+                    int errorLength = 0;
+                    for(DeterministicFiniteAutomaton dfa : automata){
+                        if(dfa.isValidLexeme()){
+                            if(!dfa.isIgnore()){
+                                if(dfa.getLexeme().length() > currentLength){
+                                    int columnValue;
+                                    if(currentLength >= errorLength){ 
+                                        columnValue = column - (dfa.getLexeme().length() + errorLength);
+                                    }
+                                    else{
+                                        columnValue = column -(dfa.getLexeme().length() + errorLength - 1);
+                                    }
+                                    token = new Token(dfa.getId(), dfa.getLexeme(), row, columnValue);
+                                    currentLength = dfa.getLexeme().length();
+                                }
+                            }
+                        }
+                        else{
+                            if(dfa.getLexeme().length() > errorLength){
+                                errorLength = dfa.getLexeme().length();
+                            }
+                        }
+                    }
+                    if(errorLength > currentLength){
+                        index = index - (errorLength - currentLength);
+                        column = index;
+                    }
+        //--------------------  7   --------------------// 
+                    if(token != null) tokens.add(token);
+                    if((int)data.charAt(index) == EOF) index++;
+                    initializaeAutomata();
+                }
+                else{
+                    if((int)data.charAt(index) != EOF) tokens.add(new Token("Error",  String.valueOf((char)data.charAt(index)), row, column));
+                    setRow((int)data.charAt(index));
+                    index++;
+                    column++;
+                    initializaeAutomata();
+                } 
+            }
+            else{
+                setRow((int)data.charAt(index));
+                index++;
+                column++;
+            }
+        }  
         for(int i = 0; i < tokens.size(); i++){
             System.out.println("Token: [" +tokens.get(i).getTokenId()+ "] Lexema: [" +tokens.get(i).getLexeme()+ "] Fila: " +tokens.get(i).getRow()+ " Columna: " +tokens.get(i).getColumn());
         }
-        
         return null;
     }
     
+    /**
+     * Metodo que inicializa cada uno de los automatas dentro del arrayList automata.
+     */
+    private void initializaeAutomata(){
+        automata.forEach(dfa -> {
+            dfa.initializeAFD();
+        });
+    }
     
+    /**
+     * Metodo que recorre cada uno de los automatas dentro de la lista automata.
+     * @return True si todos los automatas estan inactivos, false si alguno esta activo.
+     */
+    private boolean allAutamataInactive(){
+        return automata.stream().noneMatch(dfa -> (dfa.isActive()));
+    }
+    
+    /**
+     * Metodo que valida si algun automata quedo en estado de aceptacion.
+     * @return True si se encuentra algun estado de aceptacion de lo contrario false.
+     */ 
+    private boolean isValidLexeme(){
+        return automata.stream().anyMatch(dfa -> (dfa.isValidLexeme()));
+    }
+    
+    /**
+     * Metodo que agrega uno al valor de la variable row si el synbolo recibido es un salto de linea.
+     * @param symbol Symbolo a analizar. 
+     */
     private void setRow(int symbol){
         if(symbol == 10){
             row++;
+            column = -1;
         }
     }
-    
-    private void lessRow(int start, int end, String data){
-        String text = data.substring(start, end);
-        for(int i = 0; i < text.length(); i++){
-            if(text.charAt(i) == '\n'){
-                row--;
-            }
-        }
-    }
-    
-   
 }

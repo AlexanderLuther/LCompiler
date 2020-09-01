@@ -30,9 +30,9 @@ public class LexerCreator implements Instruction{
      */
     @Override
     public Object execute(SymbolTable symbolTable) {
-        for(Instruction inst: regularExpresions){
+        regularExpresions.forEach(inst -> {
             automata.addFirst((DeterministicFiniteAutomaton)inst.execute(symbolTable));
-        }
+        });
         return new LLexer(automata);
     }
 }
