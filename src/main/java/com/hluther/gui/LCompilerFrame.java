@@ -208,7 +208,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
             if(selectedPane != -1){
                 messagesArea.setText("");
                 currentLanguage.getLexer().getTokens(tabs.get(selectedPane).getText()).forEach(token ->{
-                    messagesArea.setText(messagesArea.getText() + "Token: [" +token.getTokenId()+ "] Lexema: [" +token.getLexeme()+ "] Fila: " +token.getRow()+ " Columna: " +token.getColumn()+ "\n");;
+                    messagesArea.setText(messagesArea.getText() + "Token: [" +token.getTokenId()+ "] Lexema: [" +token.getLexeme()+ "] Fila: " +token.getRow()+ " Columna: " +token.getColumn()+ "\n");
                 });   
             }
             else{
