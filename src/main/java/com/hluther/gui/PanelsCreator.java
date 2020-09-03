@@ -1,7 +1,6 @@
 package com.hluther.gui;
 
 import com.hluther.controlClasses.EventsDriver;
-import com.hluther.entityClasses.Tab;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;

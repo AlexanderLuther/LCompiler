@@ -1,5 +1,6 @@
-package com.hluther.entityClasses;
+package com.hluther.gui;
 
+import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 /**
@@ -16,6 +17,7 @@ public class Tab extends JTextArea{
     private final String BLANKSPACE = "   ";
     
     public Tab(String name, String extension, String data) {
+        this.setFont(new Font("Source Code Pro", 0, 14));
         this.name = name;
         this.extension = extension;
         this.data = data;
@@ -24,6 +26,7 @@ public class Tab extends JTextArea{
     }
 
     public Tab(String name, String extension, String data, String path) {
+        this.setFont(new Font("Source Code Pro", 0, 13));
         this.name = name;
         this.extension = extension;
         this.data = data;

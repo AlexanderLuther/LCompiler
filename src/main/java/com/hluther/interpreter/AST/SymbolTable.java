@@ -6,7 +6,7 @@ import java.util.LinkedList;
  * @author helmuth
  */
 public class SymbolTable extends LinkedList<Symbol>{
-
+    
     public SymbolTable() {
         super();
     }
@@ -51,7 +51,7 @@ public class SymbolTable extends LinkedList<Symbol>{
             super.add(e);
             return true;
         }
-        System.out.println("La variable "+e.getId()+" no puede declararse porque ya existe en este ámbito");
+        System.out.println("La variable " +e.getId()+ " no puede ser declarada porque ya existe en este ambito");  
         return false;
     }
     

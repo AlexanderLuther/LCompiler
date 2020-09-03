@@ -56,7 +56,7 @@ WhiteSpace = {LineTerminator} | [ \t\f]
 
     private void printError(){
         if(line != -1 && column != -1){
-            lCompilerFrame.printMessage("Error Lexico -> Lexema ["+errorLexeme+"] no reconocido. Linea: "+line+" Columna: "+column + "\n");
+            lCompilerFrame.printMessage("Error Lexico: Lexema ["+errorLexeme+"] no reconocido en esta seccion del archivo. Linea: "+line+" Columna: "+column + "\n");
             errorLexeme = "";
             line = -1;
             column = -1;

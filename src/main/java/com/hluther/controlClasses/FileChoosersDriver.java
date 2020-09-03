@@ -2,7 +2,7 @@ package com.hluther.controlClasses;
 
 import com.hluther.controlClasses.FilesDriver;
 import com.hluther.entityClasses.Language;
-import com.hluther.entityClasses.Tab;
+import com.hluther.gui.Tab;
 import com.hluther.gui.LCompilerFrame;
 import javax.swing.JFileChooser;
 import org.apache.commons.io.FilenameUtils;

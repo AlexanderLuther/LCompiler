@@ -22,6 +22,14 @@ public class ParserCreator implements Instruction{
     @Override
     public Object execute(SymbolTable symbolTable, LCompilerFrame lCompilerFrame) {
         productionRules.forEach(list -> {
+            for(String sym : list){
+                if(symbolTable.contains(sym)){
+                    System.out.println("Hacer magia xD");
+                }
+                else{
+                    lCompilerFrame.printMessage("Error semantico en seccion de gramatica: [" +sym+ "] no se encuentra declarado.\n");
+                }
+            }
             System.out.println(list.toString());
         });
         

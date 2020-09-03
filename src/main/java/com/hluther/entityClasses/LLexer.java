@@ -114,9 +114,6 @@ public class LLexer implements Serializable{
                 column++;
             }
         }  
-        for(int i = 0; i < tokens.size(); i++){
-            System.out.println("Token: [" +tokens.get(i).getTokenId()+ "] Lexema: [" +tokens.get(i).getLexeme()+ "] Fila: " +tokens.get(i).getRow()+ " Columna: " +tokens.get(i).getColumn());
-        }
         return tokens;
     }
     

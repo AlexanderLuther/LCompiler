@@ -24,16 +24,20 @@ public class LexerCreator implements Instruction{
     
     /**
      * Método que ejecuta la instruccion de cada expresion regular recibida y obtiene
-     * el AFD resultante. Guarda en un ArrayList los AFD's y crea una nueva instancia 
+     * el AFD resultante.Guarda en un ArrayList los AFD's y crea una nueva instancia 
      * de la clase Lexer.
      * @param symbolTable tabla de símbolos del ámbito padre de la sentencia.
+     * @param lCompilerFrame
      * @return Estra instrucción retorna el LLexer creado.
      */
     @Override
     public Object execute(SymbolTable symbolTable, LCompilerFrame lCompilerFrame) {
-        regularExpresions.forEach(inst -> {
-            automata.addFirst((DeterministicFiniteAutomaton)inst.execute(symbolTable, lCompilerFrame));
-        });
+        for(int i = regularExpresions.size() - 1; i >= 0; i--){
+            DeterministicFiniteAutomaton dfa = (DeterministicFiniteAutomaton)regularExpresions.get(i).execute(symbolTable, lCompilerFrame);
+            if(dfa != null){
+                automata.addLast(dfa);
+            }
+        }
         return new LLexer(automata);
     }
 }

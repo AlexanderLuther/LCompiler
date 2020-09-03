@@ -6,7 +6,6 @@ import com.hluther.controlClasses.FilesDriver;
 import com.hluther.controlClasses.ThreadsDriver;
 import com.hluther.controlClasses.NodesDriver;
 import com.hluther.entityClasses.Language;
-import com.hluther.entityClasses.Tab;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JLabel;
@@ -29,7 +28,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private Tab tab;
     private int counter = 1;
     private int selectedPane = -1;
-    private Language currentLenguage;
+    private Language currentLanguage;
     
     
     public LCompilerFrame() {
@@ -57,6 +56,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
       
     private void setLanguages(){
         languagesMenu.removeAll();
+        deleteMenu.removeAll();
         reestoreCompileValues();
         filesDriver.getLanguages().forEach(languageName -> {
             languagesMenu.add(new LanguageMenuItem(languageName, this, languagesMenu));
@@ -67,20 +67,21 @@ public class LCompilerFrame extends javax.swing.JFrame {
     public void reestoreCompileValues(){
         compileButton.setEnabled(false);
         compileMenu.setEnabled(false);
-        currentLenguage = null;
+        currentLanguage = null;
         informationLabel.setText("Ningun lenguaje se encuentra seleccionado");
         threadsDriver.clearLabel(informationLabel);
     }
     
     public void setCurrentLanguage(String name){
-        currentLenguage = filesDriver.getLanguage(name +".l");
-        informationLabel.setText("Lenguaje seleccionado: " + currentLenguage.getName());
+        currentLanguage = filesDriver.getLanguage(name +".l");
+        informationLabel.setText("Lenguaje seleccionado: " + currentLanguage.getName());
         threadsDriver.clearLabel(informationLabel);
-        compileButton.setEnabled(true); 
-        compileMenu.setEnabled(true);
-        tableMenu.setEnabled(true);
+        if(selectedPane != -1){
+            compileButton.setEnabled(true); 
+            compileMenu.setEnabled(true);
+            tableMenu.setEnabled(true);
+        }
     }
-    
     public void deleteLenguage(String languageName){
         if(filesDriver.deleteLanguage(languageName +".l")){
             informationLabel.setText("Lenguaje eliminado exitosamente");
@@ -135,6 +136,10 @@ public class LCompilerFrame extends javax.swing.JFrame {
             saveFileMenu.setEnabled(true);
             saveAsButton.setEnabled(true);
             saveAsMenu.setEnabled(true);
+            if(currentLanguage != null){
+                compileButton.setEnabled(true);
+                compileMenu.setEnabled(true);
+            }
         }
     }
     
@@ -166,7 +171,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private void saveAs(){
         tab = tabs.get(selectedPane);
         try {
-            if(fileChoosersCreator.saveFile(this, tab, currentLenguage)) informationLabel.setText("Guardado en: " + tab.getPath());
+            if(fileChoosersCreator.saveFile(this, tab, currentLanguage)) informationLabel.setText("Guardado en: " + tab.getPath());
             else informationLabel.setText("Guardado cancelado.");
         } catch (IOException ex) {
             informationLabel.setText("Error al guardar: " + ex.getMessage());
@@ -188,6 +193,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     
     private void uploadLanguage(){
         try{
+            messagesArea.setText("");
             analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this, treeDriver);
             setLanguages();
             threadsDriver.clearLabel(informationLabel);
@@ -197,8 +203,27 @@ public class LCompilerFrame extends javax.swing.JFrame {
         }
     }
     
+    private void compile(){
+        if(currentLanguage != null){
+            if(selectedPane != -1){
+                messagesArea.setText("");
+                currentLanguage.getLexer().getTokens(tabs.get(selectedPane).getText()).forEach(token ->{
+                    messagesArea.setText(messagesArea.getText() + "Token: [" +token.getTokenId()+ "] Lexema: [" +token.getLexeme()+ "] Fila: " +token.getRow()+ " Columna: " +token.getColumn()+ "\n");;
+                });   
+            }
+            else{
+                informationLabel.setText("No hay ninguna pestana abierta para compilar");
+                threadsDriver.clearLabel(informationLabel);
+            }
+        }
+        else{
+            informationLabel.setText("Ningun lenguaje se encuentra seleccionado");
+            threadsDriver.clearLabel(informationLabel);
+        }
+    }
+    
     public void printMessage(String msg){
-        messageArea.setText(messageArea.getText() + msg);
+        messagesArea.setText(messagesArea.getText() + msg);
     }
     
     @SuppressWarnings("unchecked")
@@ -231,10 +256,9 @@ public class LCompilerFrame extends javax.swing.JFrame {
         informationLabel = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        messageArea = new javax.swing.JTextPane();
-        jLabel1 = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        messagesArea = new javax.swing.JTextArea();
         tabbedPane = new javax.swing.JTabbedPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -485,24 +509,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jPanel6.setBackground(new java.awt.Color(48, 50, 55));
         jPanel6.setLayout(new java.awt.BorderLayout());
 
+        jPanel7.setMaximumSize(new java.awt.Dimension(2147483647, 132));
+        jPanel7.setMinimumSize(new java.awt.Dimension(16, 150));
         jPanel7.setOpaque(false);
+        jPanel7.setPreferredSize(new java.awt.Dimension(601, 150));
         jPanel7.setLayout(new java.awt.BorderLayout());
-
-        messageArea.setEditable(false);
-        messageArea.setBackground(new java.awt.Color(48, 50, 55));
-        messageArea.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(38, 169, 94)));
-        messageArea.setForeground(new java.awt.Color(255, 255, 255));
-        messageArea.setMaximumSize(new java.awt.Dimension(2147483647, 150));
-        messageArea.setMinimumSize(new java.awt.Dimension(62, 100));
-        messageArea.setPreferredSize(new java.awt.Dimension(62, 100));
-        jScrollPane2.setViewportView(messageArea);
-
-        jPanel7.add(jScrollPane2, java.awt.BorderLayout.PAGE_END);
-
-        jLabel1.setBackground(new java.awt.Color(69, 73, 74));
-        jLabel1.setOpaque(true);
-        jLabel1.setPreferredSize(new java.awt.Dimension(0, 10));
-        jPanel7.add(jLabel1, java.awt.BorderLayout.CENTER);
 
         jPanel9.setBackground(new java.awt.Color(69, 73, 74));
         jPanel9.setMaximumSize(new java.awt.Dimension(32767, 20));
@@ -522,10 +533,22 @@ public class LCompilerFrame extends javax.swing.JFrame {
 
         jPanel7.add(jPanel9, java.awt.BorderLayout.PAGE_START);
 
+        messagesArea.setEditable(false);
+        messagesArea.setBackground(new java.awt.Color(48, 50, 55));
+        messagesArea.setColumns(20);
+        messagesArea.setFont(new java.awt.Font("Source Code Pro", 0, 13)); // NOI18N
+        messagesArea.setForeground(new java.awt.Color(255, 255, 255));
+        messagesArea.setRows(5);
+        messagesArea.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(38, 169, 94)));
+        jScrollPane1.setViewportView(messagesArea);
+
+        jPanel7.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
         jPanel6.add(jPanel7, java.awt.BorderLayout.PAGE_END);
 
         tabbedPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 0, 153)));
         tabbedPane.setForeground(new java.awt.Color(153, 0, 153));
+        tabbedPane.setFont(new java.awt.Font("Source Code Pro Light", 0, 14)); // NOI18N
         tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tabbedPaneStateChanged(evt);
@@ -765,20 +788,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_uploadMenuActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
-
+        compile();
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void compileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileMenuActionPerformed
-     /*   if(currentLenguage == null){
-            System.out.println("Vacio");
-        }
-        else{
-            try{
-                language.getLexer().getTokens(tabs.get(selectedPane).getText());
-            } catch(IndexOutOfBoundsException e){
-                printMessage("No ninguna pestana abierta para realizar el analisis.");
-            }    
-        }*/
+        compile();
     }//GEN-LAST:event_compileMenuActionPerformed
 
     private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
@@ -843,7 +857,6 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem exitMenu;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel informationLabel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
@@ -859,7 +872,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator12;
     private javax.swing.JToolBar.Separator jSeparator13;
@@ -873,7 +886,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator9;
     private javax.swing.JToolBar jToolBar1;
     public javax.swing.JMenu languagesMenu;
-    private javax.swing.JTextPane messageArea;
+    private javax.swing.JTextArea messagesArea;
     private javax.swing.JButton newFileButton;
     private javax.swing.JMenuItem newFileMenu;
     private javax.swing.JButton openFileButton;

@@ -7,7 +7,7 @@ public class Symbol {
     
     private final Type type;
     private final String id;
-    private Object value;    
+    private Object value;   
     
     public Symbol(String id, Type tipo) {
         this.type = tipo;
@@ -37,7 +37,8 @@ public class Symbol {
         INTEGER,
         STRING,
         REAL,
-        VOID
+        VOID,
+        REGULAR_EXPRESION
     }
 }
 

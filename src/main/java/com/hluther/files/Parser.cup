@@ -1,4 +1,4 @@
-package com.hluther.interpreter.parser;
+ package com.hluther.interpreter.parser;
 import java_cup.runtime.*;
 import java.util.LinkedList;
 import com.hluther.gui.LCompilerFrame;
@@ -41,7 +41,7 @@ parser code {:
     }
 
     public void syntax_error(Symbol s){
-        lCompilerFrame.printMessage("Error: "+ s.toString());
+        lCompilerFrame.printMessage("Error Sintactico: No se esperaba [" +s.value+ "]. Linea " +s.left+ " Columna " +s.right+"\n");
     }
 
     public void unrecovered_syntax_error(Symbol s){
@@ -57,7 +57,7 @@ terminal Integer    INTEGERNUM;
 
 /* Non-terminals */
 non terminal                            s, grammarCode, grammarValue;
-non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode, terminalDeclaration, nonTerminalDeclaration;
+non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode, nonTerminalDeclaration, terminalDeclaration;
 non terminal Integer                    languageRelease, character, expCharacter;
 non terminal Type                       dataType;
 non terminal Language                   languageInformation;
@@ -72,15 +72,16 @@ start with s;
 s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regularExpresions:regularExpresions SEPARATOR symbols:declarations SEPARATOR grammar:rules
         {: 
             if(language.getName().equals("")){ 
-                print("Error Semantico: No se encontro ningun nombre para el lenguaje");
+                lCompilerFrame.printMessage("Error semantico en seccion de informacion: No se encontro ningun nombre para el lenguaje\n");
             }
             else{
                 language.setSourceCode(code); 
                 if(language.getSourceCode().isBlank()){
                     language.setSourceCode("");
                 }
-                language.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null, lCompilerFrame));
                 SymbolTable symbolTable = new SymbolTable();
+                language.setLexer((LLexer)new LexerCreator(regularExpresions).execute(symbolTable, lCompilerFrame));
+                symbolTable.removeAll(symbolTable);
                 for(int i = 0; i < declarations.size(); i++){
                     declarations.get(i).execute(symbolTable, lCompilerFrame);
                 }
@@ -92,11 +93,12 @@ s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regular
         | languageInformation:language SEPARATOR SEPARATOR regularExpresions:regularExpresions SEPARATOR symbols:declarations SEPARATOR grammar:rules
         {:
             if(language.getName().equals("")){
-                print("Error Semantico: No se encontro ningun nombre para el lenguaje");
+                lCompilerFrame.printMessage("Error semantico en seccion de informacion: No se encontro ningun nombre para el lenguaje\n");
             }
             else{
-                language.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null, lCompilerFrame));
                 SymbolTable symbolTable = new SymbolTable();
+                language.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null, lCompilerFrame));
+                symbolTable.removeAll(symbolTable);
                 for(int i = 0; i < declarations.size(); i++){
                     declarations.get(i).execute(symbolTable, lCompilerFrame);
                 }
@@ -119,6 +121,7 @@ languageInformation::=  languageName:name languageInformation:language          
                         | languageAutor:author          {: RESULT = new Language("", "", author, -1, ""); :}
                         | languageRelease:value         {: RESULT = new Language("", "", "", value, ""); :}
                         | languageExtension:extension   {: RESULT = new Language("", "", "", -1, extension); :}
+                        | error SEMICOLON languageInformation
                         ;
 
 languageName::=     NAME COLON ID:name SEMICOLON {: RESULT = name; :} 
@@ -162,6 +165,8 @@ regularExpresions::=    ID:id EQUALS expresion:root SEMICOLON regularExpresions:
                         | IGNORE EQUALS expresion:root SEMICOLON regularExpresions:list {: RESULT = list; RESULT.add(new RegularExpresion("Ignore", root, true)); :}
                         | ID:id EQUALS expresion:root SEMICOLON                         {: RESULT = new LinkedList<>(); RESULT.add(new RegularExpresion(id, root, false)); :}
                         | IGNORE EQUALS expresion:root SEMICOLON                        {: RESULT = new LinkedList<>(); RESULT.add(new RegularExpresion("Ignore", root, true)); :}
+                        | error SEMICOLON regularExpresions
+                        | error EQUALS regularExpresions    
                         ;
                         
 expresion::=    expresion:leftNode binaryOperation:parentNode PARENTHESESO expresion:node PARENTHESESC unitaryOperation:rightNode       {: RESULT = nodesDriver.createMultiEdge(node, leftNode, parentNode, rightNode); :} 
@@ -241,6 +246,7 @@ symbols::=  nonTerminalSymbol:declaration SEMICOLON symbols:previousDeclaration 
             | terminalSymbol:declaration SEMICOLON symbols:previousDeclaration  {: declaration.addAll(previousDeclaration); RESULT = declaration; :}
             | nonTerminalSymbol:declaration SEMICOLON                           {: RESULT = declaration; :}
             | terminalSymbol:declaration SEMICOLON                              {: RESULT = declaration; :}
+            | error SEMICOLON symbols 
             ;
 
 terminalSymbol::=   TERMINAL dataType:type terminalDeclaration:values {: RESULT = concatDeclaration(values, type); :}
@@ -271,6 +277,7 @@ grammar::=  NONTERMINALSYM:value DOBLECOLON productionRule:values SEMICOLON gram
             | NONTERMINALSYM:value DOBLECOLON grammarCode SEMICOLON grammar:rules          {: LinkedList<String> list = new LinkedList<>(); list.add(value); rules.addRule(list); RESULT = rules; :}
             | NONTERMINALSYM:value DOBLECOLON productionRule:values SEMICOLON              {: RESULT = new ParserCreator(); values.addFirst(value); RESULT.addRule(values); :}
             | NONTERMINALSYM:value DOBLECOLON grammarCode SEMICOLON                        {: RESULT = new ParserCreator(); LinkedList<String> list = new LinkedList<>(); list.add(value); RESULT.addRule(list); :}
+            | error SEMICOLON grammar
             ;
 
 productionRule::=   NONTERMINALSYM:value grammarValue productionRule:values {: values.addFirst(value); RESULT = values; :}

@@ -1,6 +1,7 @@
 package com.hluther.interpreter.AST;
 
 import com.hluther.gui.LCompilerFrame;
+import com.hluther.interpreter.AST.Symbol.Type;
 
 /**
  * Clase que ejecuta las acciones de una instrucción de declaración y que implementa
@@ -10,13 +11,13 @@ import com.hluther.gui.LCompilerFrame;
 public class Declaration implements Instruction{
     
     private final String id;
-    private final Symbol.Type type;
+    private final Type type;
     /**
      * Constructor de la clase
-     * @param id Identificador de la variable que será declarada
+     * @param symbol
      * @param type Tipo de la clase que será declarada
      */
-    public Declaration(String id, Symbol.Type type) {
+    public Declaration(String id, Type type) {
         this.id = id;
         this.type = type;
     }
@@ -30,7 +31,9 @@ public class Declaration implements Instruction{
      */
     @Override
     public Object execute(SymbolTable symbolTable, LCompilerFrame lCompilerFrame) {
-        symbolTable.add(new Symbol(id, type));
+        if(!symbolTable.add(new Symbol(id, type))){
+            lCompilerFrame.printMessage("Error Semantico en seccion de Simbolos: [" +id+ "] no puede ser declarado porque ya existe en este ambito.\n");  
+        }
         return null;
     }
 }
