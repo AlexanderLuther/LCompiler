@@ -34,9 +34,10 @@ public class Symbol {
      * Enumeración que lista todos los tipos de variable reconocidos en el lenguaje.
      */
     public static enum Type{
-        INT,
+        INTEGER,
         STRING,
-        BOOLEAN
+        REAL,
+        VOID
     }
 }
 

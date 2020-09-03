@@ -3,6 +3,7 @@ package com.hluther.interpreter.AST;
 import com.hluther.controlClasses.TreeMethodDriver;
 import com.hluther.entityClasses.DeterministicFiniteAutomaton;
 import com.hluther.entityClasses.Node;
+import com.hluther.gui.LCompilerFrame;
 /**
  *
  * @author helmuth
@@ -34,7 +35,7 @@ public class RegularExpresion implements Instruction{
      * @return 
      */
     @Override
-    public Object execute(SymbolTable symbolTable) {
+    public Object execute(SymbolTable symbolTable, LCompilerFrame lCompilerFrame) {
         //Expandir la expresion
         root = treeMethod.expandTree(regularExpresion);
         //Calcular anulable, primeraPos, ultimaPos y siguientePos

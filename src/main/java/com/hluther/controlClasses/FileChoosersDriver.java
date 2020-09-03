@@ -1,6 +1,7 @@
 package com.hluther.controlClasses;
 
 import com.hluther.controlClasses.FilesDriver;
+import com.hluther.entityClasses.Language;
 import com.hluther.entityClasses.Tab;
 import com.hluther.gui.LCompilerFrame;
 import javax.swing.JFileChooser;
@@ -61,12 +62,13 @@ public class FileChoosersDriver {
     * recibida como parametro en base al archivo creado. Por ultimo se llama al
     * metodo writeFile para llenar con informacion el archivo.
     */
-    public boolean saveFile(LCompilerFrame frame, Tab tab) throws IOException{
+    public boolean saveFile(LCompilerFrame frame, Tab tab, Language language) throws IOException{
         String path = "";
         fileChooser = new JFileChooser();
         fileChooser.setApproveButtonText("Guardar");
         fileChooser.setDialogTitle("Guardar Archivo");
-        fileChooser.setSelectedFile(new File(tab.getName()));
+        if(language == null) fileChooser.setSelectedFile(new File(tab.getName()));
+        else fileChooser.setSelectedFile(new File(tab.getName() +"."+ language.getExtension()));
         int selection = fileChooser.showOpenDialog(frame);   
         if(selection == JFileChooser.APPROVE_OPTION){
             //Crear archivo en blanco.

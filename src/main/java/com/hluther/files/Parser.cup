@@ -6,10 +6,15 @@ import com.hluther.interpreter.lexer.Lexer;
 import com.hluther.entityClasses.Language;
 import com.hluther.entityClasses.Node;
 import com.hluther.entityClasses.LLexer;
+import com.hluther.entityClasses.LParser;
 import com.hluther.controlClasses.NodesDriver;
 import com.hluther.interpreter.AST.Instruction;
+import com.hluther.interpreter.AST.Declaration;
+import com.hluther.interpreter.AST.ParserCreator;
 import com.hluther.interpreter.AST.RegularExpresion;
 import com.hluther.interpreter.AST.LexerCreator;
+import com.hluther.interpreter.AST.Symbol.Type;
+import com.hluther.interpreter.AST.SymbolTable;
 
 parser code {:
 
@@ -26,6 +31,15 @@ parser code {:
         lCompilerFrame.printMessage(msg + "\n");
     }
 
+    private LinkedList<Instruction> concatDeclaration(String values, Type type){
+        LinkedList<Instruction> list = new LinkedList<>();
+        String[] id = values.split(",");
+        for (String id1 : id) {
+            list.add(new Declaration(id1, type));
+        }
+        return list;
+    }
+
     public void syntax_error(Symbol s){
         lCompilerFrame.printMessage("Error: "+ s.toString());
     }
@@ -36,38 +50,59 @@ parser code {:
 :}
 
 /* Terminals */
-terminal String     SEPARATOR, COLON, SEMICOLON, FULLSTOP, ID, NAME, VERSION, AUTHOR, RELEASE, EXTENSION, CODE, SPECIALCHARACTER, MACRONUMBERS, MACROLETTERSMAY, MACROLETTERSMIN, CHARACTER, QUESTIONMARK, ASTERISK, 
-                    PLUS, VERTICALBAR, LINEBREAK, TAB, BLANKSPACE, DOUBLEQUOTES, PARENTHESESO, PARENTHESESC, SQUAREBRACKETO, SQUAREBRACKETC, IGNORE, EQUALS;
+terminal String     SEPARATOR, COLON, SEMICOLON, FULLSTOP, ID, NAME, VERSION, AUTHOR, RELEASE, EXTENSION, CODE, SPECIALCHARACTER, MACRONUMBERS, MACROLETTERSMAY, MACROLETTERSMIN, CHARACTER, 
+                    QUESTIONMARK, ASTERISK, PLUS, VERTICALBAR, LINEBREAK, TAB, BLANKSPACE, DOUBLEQUOTES, PARENTHESESO, PARENTHESESC, SQUAREBRACKETO, SQUAREBRACKETC, IGNORE, EQUALS, TERMINAL,
+                    NOT, INTEGER, REAL, STRING, NONTERMINALSYM, TERMINALSYM, COMMA, CURLYBRACKETO, CURLYBRACKETC, DOBLECOLON;
 terminal Integer    INTEGERNUM;
 
 /* Non-terminals */
-non terminal                            s;
-non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode;
+non terminal                            s, grammarCode, grammarValue;
+non terminal String                     languageExtension, languageName, languageAutor, author, languageVersion, version, sourceCode, terminalDeclaration, nonTerminalDeclaration;
 non terminal Integer                    languageRelease, character, expCharacter;
+non terminal Type                       dataType;
 non terminal Language                   languageInformation;
-non terminal Node                       binaryOperation, unitaryOperation, characters, expresion;                     
-non terminal LinkedList<Instruction>    regularExpresions;
+non terminal Node                       binaryOperation, unitaryOperation, characters, expresion;  
+non terminal ParserCreator              grammar;
+non terminal LinkedList<Instruction>    regularExpresions, nonTerminalSymbol, terminalSymbol, symbols;
+non terminal LinkedList<String>         productionRule;
 
 /* The grammar */
 start with s;
 
-s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regularExpresions:regularExpresions SEPARATOR{: 
+s::=    languageInformation:language SEPARATOR sourceCode:code SEPARATOR regularExpresions:regularExpresions SEPARATOR symbols:declarations SEPARATOR grammar:rules
+        {: 
             if(language.getName().equals("")){ 
                 print("Error Semantico: No se encontro ningun nombre para el lenguaje");
-            } 
-            language.setSourceCode(code); 
-            if(language.getSourceCode().isBlank()){
-                language.setSourceCode("");
             }
-            System.out.println(language.getSourceCode()); 
-            lCompilerFrame.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null));
+            else{
+                language.setSourceCode(code); 
+                if(language.getSourceCode().isBlank()){
+                    language.setSourceCode("");
+                }
+                language.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null, lCompilerFrame));
+                SymbolTable symbolTable = new SymbolTable();
+                for(int i = 0; i < declarations.size(); i++){
+                    declarations.get(i).execute(symbolTable, lCompilerFrame);
+                }
+                language.setParser((LParser)rules.execute(symbolTable, lCompilerFrame));
+                lCompilerFrame.addLanguage(language);
+            }
         :}
-        | languageInformation:language SEPARATOR SEPARATOR regularExpresions:regularExpresions SEPARATOR{:
+
+        | languageInformation:language SEPARATOR SEPARATOR regularExpresions:regularExpresions SEPARATOR symbols:declarations SEPARATOR grammar:rules
+        {:
             if(language.getName().equals("")){
                 print("Error Semantico: No se encontro ningun nombre para el lenguaje");
+            }
+            else{
+                language.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null, lCompilerFrame));
+                SymbolTable symbolTable = new SymbolTable();
+                for(int i = 0; i < declarations.size(); i++){
+                    declarations.get(i).execute(symbolTable, lCompilerFrame);
+                }
+                language.setParser((LParser)rules.execute(symbolTable, lCompilerFrame));
+                lCompilerFrame.addLanguage(language);
             } 
-            System.out.println(language.getSourceCode());
-            lCompilerFrame.setLexer((LLexer)new LexerCreator(regularExpresions).execute(null));
         :}
         ;
 
@@ -198,3 +233,56 @@ character::=     CHARACTER:value        {: RESULT = (int)value.charAt(0); :}
                 | SQUAREBRACKETO:value  {: RESULT = (int)value.charAt(0); :}
                 | SQUAREBRACKETC:value  {: RESULT = (int)value.charAt(0); :} 
                 ;
+
+
+//--------------------------------  SYMBOLS SECTION --------------------------------//
+
+symbols::=  nonTerminalSymbol:declaration SEMICOLON symbols:previousDeclaration {: declaration.addAll(previousDeclaration); RESULT = declaration; :}
+            | terminalSymbol:declaration SEMICOLON symbols:previousDeclaration  {: declaration.addAll(previousDeclaration); RESULT = declaration; :}
+            | nonTerminalSymbol:declaration SEMICOLON                           {: RESULT = declaration; :}
+            | terminalSymbol:declaration SEMICOLON                              {: RESULT = declaration; :}
+            ;
+
+terminalSymbol::=   TERMINAL dataType:type terminalDeclaration:values {: RESULT = concatDeclaration(values, type); :}
+                    | TERMINAL terminalDeclaration:values             {: RESULT = concatDeclaration(values, Type.VOID); :}  
+                    ;
+
+terminalDeclaration::=  TERMINALSYM:value COMMA terminalDeclaration:previousValue {: RESULT = value +","+ previousValue; :}
+                        | TERMINALSYM:value                                       {: RESULT = value; :}
+                        ;
+                    
+nonTerminalSymbol::=    NOT TERMINAL dataType:type nonTerminalDeclaration:values {: RESULT = concatDeclaration(values, type); :}
+                        | NOT TERMINAL nonTerminalDeclaration:values             {: RESULT = concatDeclaration(values, Type.VOID); :}
+                        ;
+
+nonTerminalDeclaration::=   NONTERMINALSYM:value COMMA nonTerminalDeclaration:previousValue {: RESULT = value +","+ previousValue; :}
+                            | NONTERMINALSYM:value                                          {: RESULT = value; :}
+                            ;
+
+dataType::=     INTEGER  {: RESULT = Type.INTEGER; :}
+                | REAL   {: RESULT = Type.REAL; :}
+                | STRING {: RESULT = Type.STRING; :}
+                ;
+
+
+//--------------------------------  GRAMMAR SECTION --------------------------------//
+
+grammar::=  NONTERMINALSYM:value DOBLECOLON productionRule:values SEMICOLON grammar:rules  {: values.addFirst(value); rules.addRule(values); RESULT = rules; :}
+            | NONTERMINALSYM:value DOBLECOLON grammarCode SEMICOLON grammar:rules          {: LinkedList<String> list = new LinkedList<>(); list.add(value); rules.addRule(list); RESULT = rules; :}
+            | NONTERMINALSYM:value DOBLECOLON productionRule:values SEMICOLON              {: RESULT = new ParserCreator(); values.addFirst(value); RESULT.addRule(values); :}
+            | NONTERMINALSYM:value DOBLECOLON grammarCode SEMICOLON                        {: RESULT = new ParserCreator(); LinkedList<String> list = new LinkedList<>(); list.add(value); RESULT.addRule(list); :}
+            ;
+
+productionRule::=   NONTERMINALSYM:value grammarValue productionRule:values {: values.addFirst(value); RESULT = values; :}
+                    | TERMINALSYM:value grammarValue productionRule:values  {: values.addFirst(value); RESULT = values; :}       
+                    | NONTERMINALSYM:value  grammarValue grammarCode        {: RESULT = new LinkedList<String>(); RESULT.add(value); :}
+                    | TERMINALSYM:value grammarValue grammarCode            {: RESULT = new LinkedList<String>(); RESULT.add(value); :}    
+                    ;
+
+grammarCode::=  CURLYBRACKETO sourceCode:code CURLYBRACKETC
+                |
+                ;
+
+grammarValue::=     COLON ID
+                    | 
+                    ;

@@ -5,14 +5,13 @@ import com.hluther.controlClasses.AnalysisDriver;
 import com.hluther.controlClasses.FilesDriver;
 import com.hluther.controlClasses.ThreadsDriver;
 import com.hluther.controlClasses.NodesDriver;
-import com.hluther.entityClasses.LLexer;
+import com.hluther.entityClasses.Language;
 import com.hluther.entityClasses.Tab;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
-import javax.swing.text.Document;
 /**
  *
  * @author helmuth
@@ -30,20 +29,16 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private Tab tab;
     private int counter = 1;
     private int selectedPane = -1;
+    private Language currentLenguage;
     
     
-    private LLexer lexer;
-    
-    public void setLexer(LLexer lexer){
-        this.lexer = lexer;
-    }
-    
-   
     public LCompilerFrame() {
         this.setExtendedState(MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         initComponents();
         enableComponents();
+        filesDriver.createDirectory("Lenguajes");
+        setLanguages();
     }
 
     //Getter
@@ -55,7 +50,49 @@ public class LCompilerFrame extends javax.swing.JFrame {
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
     }
+    
+    public void addLanguage(Language language){
+        filesDriver.saveLanguage(language);
+    }
       
+    private void setLanguages(){
+        languagesMenu.removeAll();
+        reestoreCompileValues();
+        filesDriver.getLanguages().forEach(languageName -> {
+            languagesMenu.add(new LanguageMenuItem(languageName, this, languagesMenu));
+            deleteMenu.add(new AutoDeleteMenu(languageName, this));
+        });
+    }
+    
+    public void reestoreCompileValues(){
+        compileButton.setEnabled(false);
+        compileMenu.setEnabled(false);
+        currentLenguage = null;
+        informationLabel.setText("Ningun lenguaje se encuentra seleccionado");
+        threadsDriver.clearLabel(informationLabel);
+    }
+    
+    public void setCurrentLanguage(String name){
+        currentLenguage = filesDriver.getLanguage(name +".l");
+        informationLabel.setText("Lenguaje seleccionado: " + currentLenguage.getName());
+        threadsDriver.clearLabel(informationLabel);
+        compileButton.setEnabled(true); 
+        compileMenu.setEnabled(true);
+        tableMenu.setEnabled(true);
+    }
+    
+    public void deleteLenguage(String languageName){
+        if(filesDriver.deleteLanguage(languageName +".l")){
+            informationLabel.setText("Lenguaje eliminado exitosamente");
+            threadsDriver.clearLabel(informationLabel);
+            setLanguages();
+        }
+        else{
+            informationLabel.setText("Ocurrio un error al eliminar el lenguaje");
+            threadsDriver.clearLabel(informationLabel);
+        }
+    }
+    
     /*
     * Remover un panel del JTabbedPane
     * Abre un JOptionPane para indicar si se desean guardar los cambios hechos
@@ -90,14 +127,14 @@ public class LCompilerFrame extends javax.swing.JFrame {
             saveAsMenu.setEnabled(false);
             compileButton.setEnabled(false);
             compileMenu.setEnabled(false);
+            tableMenu.setEnabled(false);
+            stackMenu.setEnabled(false);
         }
         else{
             saveFileButton.setEnabled(true);
             saveFileMenu.setEnabled(true);
             saveAsButton.setEnabled(true);
             saveAsMenu.setEnabled(true);
-            compileButton.setEnabled(true);
-            compileMenu.setEnabled(true);
         }
     }
     
@@ -119,10 +156,6 @@ public class LCompilerFrame extends javax.swing.JFrame {
             else informationLabel.setText("Error al guardar el archivo.");
         }
         threadsDriver.clearLabel(informationLabel);
-        
-        
-        Document document = tab.getDocument();
-        
     }
     
     /*
@@ -133,7 +166,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private void saveAs(){
         tab = tabs.get(selectedPane);
         try {
-            if(fileChoosersCreator.saveFile(this, tab)) informationLabel.setText("Guardado en: " + tab.getPath());
+            if(fileChoosersCreator.saveFile(this, tab, currentLenguage)) informationLabel.setText("Guardado en: " + tab.getPath());
             else informationLabel.setText("Guardado cancelado.");
         } catch (IOException ex) {
             informationLabel.setText("Error al guardar: " + ex.getMessage());
@@ -154,7 +187,14 @@ public class LCompilerFrame extends javax.swing.JFrame {
     }
     
     private void uploadLanguage(){
-        
+        try{
+            analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this, treeDriver);
+            setLanguages();
+            threadsDriver.clearLabel(informationLabel);
+        } catch(NullPointerException e){
+            informationLabel.setText("Carga de lenguaje cancelada.");
+            threadsDriver.clearLabel(informationLabel);
+        }
     }
     
     public void printMessage(String msg){
@@ -183,7 +223,6 @@ public class LCompilerFrame extends javax.swing.JFrame {
         jSeparator12 = new javax.swing.JToolBar.Separator();
         uploadButton = new javax.swing.JButton();
         jSeparator9 = new javax.swing.JToolBar.Separator();
-        deleteButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
@@ -207,12 +246,12 @@ public class LCompilerFrame extends javax.swing.JFrame {
         saveAsMenu = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         exitMenu = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        languagesMenu = new javax.swing.JMenu();
         jMenu1 = new javax.swing.JMenu();
         compileMenu = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         uploadMenu = new javax.swing.JMenuItem();
-        deleteMenu = new javax.swing.JMenuItem();
+        deleteMenu = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         tableMenu = new javax.swing.JMenuItem();
         stackMenu = new javax.swing.JMenuItem();
@@ -363,18 +402,13 @@ public class LCompilerFrame extends javax.swing.JFrame {
         uploadButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         uploadButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/loadBW.png"))); // NOI18N
         uploadButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        uploadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                uploadButtonActionPerformed(evt);
+            }
+        });
         jToolBar1.add(uploadButton);
         jToolBar1.add(jSeparator9);
-
-        deleteButton.setBackground(new java.awt.Color(60, 63, 68));
-        deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/delete.png"))); // NOI18N
-        deleteButton.setToolTipText("Borrar Lenguaje... (Ctrl+D)");
-        deleteButton.setBorderPainted(false);
-        deleteButton.setFocusable(false);
-        deleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        deleteButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/deleteBW.png"))); // NOI18N
-        deleteButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(deleteButton);
 
         jPanel4.add(jToolBar1, java.awt.BorderLayout.PAGE_START);
 
@@ -584,10 +618,10 @@ public class LCompilerFrame extends javax.swing.JFrame {
 
         jMenuBar1.add(fileMenu);
 
-        jMenu2.setForeground(new java.awt.Color(255, 255, 255));
-        jMenu2.setText("Lenguajes");
-        jMenu2.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
-        jMenuBar1.add(jMenu2);
+        languagesMenu.setForeground(new java.awt.Color(255, 255, 255));
+        languagesMenu.setText("Lenguajes");
+        languagesMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
+        jMenuBar1.add(languagesMenu);
 
         jMenu1.setForeground(new java.awt.Color(255, 255, 255));
         jMenu1.setText("Ejecutar");
@@ -621,12 +655,11 @@ public class LCompilerFrame extends javax.swing.JFrame {
         });
         jMenu1.add(uploadMenu);
 
-        deleteMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         deleteMenu.setBackground(new java.awt.Color(48, 50, 55));
-        deleteMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
         deleteMenu.setForeground(new java.awt.Color(255, 255, 255));
         deleteMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/delete.png"))); // NOI18N
         deleteMenu.setText("Borrar Lenguaje");
+        deleteMenu.setFont(new java.awt.Font("Bitstream Vera Serif", 0, 13)); // NOI18N
         deleteMenu.setOpaque(true);
         jMenu1.add(deleteMenu);
 
@@ -728,14 +761,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_saveAsButtonActionPerformed
 
     private void uploadMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadMenuActionPerformed
-        try{
-            analysisDriver.doAnalysis(filesDriver.readFile(fileChoosersCreator.getPath(this)), this, treeDriver);
-            compileButton.setEnabled(true);
-            compileMenu.setEnabled(true);
-        } catch(NullPointerException e){
-            informationLabel.setText("Carga de lenguaje cancelada.");
-            threadsDriver.clearLabel(informationLabel);
-        }
+        uploadLanguage();
     }//GEN-LAST:event_uploadMenuActionPerformed
 
     private void compileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileButtonActionPerformed
@@ -743,17 +769,21 @@ public class LCompilerFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_compileButtonActionPerformed
 
     private void compileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compileMenuActionPerformed
-        if(lexer == null){
+     /*   if(currentLenguage == null){
             System.out.println("Vacio");
         }
         else{
             try{
-                lexer.getTokens(tabs.get(selectedPane).getText());
+                language.getLexer().getTokens(tabs.get(selectedPane).getText());
             } catch(IndexOutOfBoundsException e){
                 printMessage("No ninguna pestana abierta para realizar el analisis.");
             }    
-        }
+        }*/
     }//GEN-LAST:event_compileMenuActionPerformed
+
+    private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
+        uploadLanguage();
+    }//GEN-LAST:event_uploadButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -809,14 +839,12 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenu;
     private javax.swing.JButton compileButton;
     private javax.swing.JMenuItem compileMenu;
-    private javax.swing.JButton deleteButton;
-    private javax.swing.JMenuItem deleteMenu;
+    private javax.swing.JMenu deleteMenu;
     private javax.swing.JMenuItem exitMenu;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel informationLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
@@ -844,6 +872,7 @@ public class LCompilerFrame extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator8;
     private javax.swing.JToolBar.Separator jSeparator9;
     private javax.swing.JToolBar jToolBar1;
+    public javax.swing.JMenu languagesMenu;
     private javax.swing.JTextPane messageArea;
     private javax.swing.JButton newFileButton;
     private javax.swing.JMenuItem newFileMenu;

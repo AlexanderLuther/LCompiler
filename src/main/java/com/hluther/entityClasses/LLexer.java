@@ -1,10 +1,11 @@
 package com.hluther.entityClasses;
+import java.io.Serializable;
 import java.util.LinkedList;
 /**
  *
  * @author helmuth
  */
-public class LLexer {
+public class LLexer implements Serializable{
     
     private LinkedList<DeterministicFiniteAutomaton> automata = new LinkedList<>();
     private final char EOF = 03;
@@ -116,7 +117,7 @@ public class LLexer {
         for(int i = 0; i < tokens.size(); i++){
             System.out.println("Token: [" +tokens.get(i).getTokenId()+ "] Lexema: [" +tokens.get(i).getLexeme()+ "] Fila: " +tokens.get(i).getRow()+ " Columna: " +tokens.get(i).getColumn());
         }
-        return null;
+        return tokens;
     }
     
     /**

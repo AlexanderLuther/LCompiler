@@ -19,7 +19,7 @@ public class ThreadsDriver {
                 label.setText("");
             }    
             catch (Exception e) {
-                System.out.println(e);
+                System.out.println(e.getMessage());
             }
         }};
         hilo.start();

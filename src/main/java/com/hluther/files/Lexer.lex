@@ -13,7 +13,7 @@ import java_cup.runtime.*;
 %line 
 %column
 %public
-%states CODE, REGULAR_EXPRESIONS_DECLARATION, REGULAR_EXPRESIONS_DEFINITION, SYMBOLS
+%states CODE, REGULAR_EXPRESIONS_DECLARATION, REGULAR_EXPRESIONS_DEFINITION, SYMBOLS, GRAMMAR, GRAMMAR_CODE, ID
 
 Letter = [a-zA-Z]
 Number = [0-9]
@@ -128,6 +128,46 @@ WhiteSpace = {LineTerminator} | [ \t\f]
 }
 
 <SYMBOLS>{
-    [^]                                             { printToken("Llegue aca"); }
+    "%%"                                            { yybegin(GRAMMAR); printToken("SEPARATOR"); printError(); return symbol(sym.SEPARATOR, yytext()); }
+    "//"{InputCharacter}* {LineTerminator}?         { printToken("LINECOMMENT"); printError(); } //Ignore
+    ("/*" [^*/]* "*/") | ("/*" [^/]~ "*/")          { printToken("BLOCKCOMMENT"); printError(); } //Ignore
+    ","                                             { printToken("COMMA"); printError(); return symbol(sym.COMMA, yytext()); }
+    ";"                                             { printToken("SEMICOLON"); printError(); return symbol(sym.SEMICOLON, yytext()); }
+    "terminal"                                      { printToken("TERMINAL"); printError(); return symbol(sym.TERMINAL, yytext()); }
+    "no"                                            { printToken("NOT"); printError(); return symbol(sym.NOT, yytext()); }
+    "entero"                                        { printToken("INTEGER"); printError(); return symbol(sym.INTEGER, yytext()); }
+    "real"                                          { printToken("REAL"); printError(); return symbol(sym.REAL, yytext()); }
+    "cadena"                                        { printToken("STRING"); printError(); return symbol(sym.STRING, yytext()); }
+    [A-Z]+                                          { printToken("NONTERMINALSYM"); printError(); return symbol(sym.NONTERMINALSYM, yytext()); }
+    [a-z]+                                          { printToken("TERMINALSYM"); printError(); return symbol(sym.TERMINALSYM, yytext()); }
+    {WhiteSpace}                                    { printError(); } //Ignore
+    [^]                                             { printToken("ERROR"); createErrorLexeme(yytext(), (yyline+1), yycolumn); }
+}
+
+<GRAMMAR>{
+    ":"                                             { yybegin(ID); printToken("COLON"); printError(); return symbol(sym.COLON, yytext()); }
+    "::"                                            { printToken("DOBLECOLON"); printError(); return symbol(sym.DOBLECOLON, yytext()); }    
+    "{"                                             { yybegin(GRAMMAR_CODE); printToken("CURLYBRACKETO"); return symbol(sym.CURLYBRACKETO, yytext()); }
+    ";"                                             { printToken("SEMICOLON"); return symbol(sym.SEMICOLON, yytext()); }
+    "//"{InputCharacter}* {LineTerminator}?         { printToken("LINECOMMENT"); printError(); } //Ignore
+    ("/*" [^*/]* "*/") | ("/*" [^/]~ "*/")          { printToken("BLOCKCOMMENT"); printError(); } //Ignore
+    [A-Z]+                                          { printToken("NONTERMINALSYM"); printError(); return symbol(sym.NONTERMINALSYM, yytext()); }
+    [a-z]+                                          { printToken("TERMINALSYM"); printError(); return symbol(sym.TERMINALSYM, yytext()); }
+    {WhiteSpace}                                    { printError(); } //Ignore
+    [^]                                             { printToken("ERROR"); createErrorLexeme(yytext(), (yyline+1), yycolumn); }
+}
+
+<ID>{
+    "//"{InputCharacter}* {LineTerminator}?         { printToken("LINECOMMENT"); printError(); } //Ignore
+    ("/*" [^*/]* "*/") | ("/*" [^/]~ "*/")          { printToken("BLOCKCOMMENT"); printError(); } //Ignore
+    {Letter} ({Letter} | {Number})*                 { yybegin(GRAMMAR); printToken("ID"); printError(); return symbol(sym.ID, yytext()); }
+    {WhiteSpace}                                    { printError(); } //Ignore
+    [^]                                             { yybegin(GRAMMAR); printToken("ERROR"); createErrorLexeme(yytext(), (yyline+1), yycolumn); }
+}
+
+<GRAMMAR_CODE>{
+    "}"                                             { yybegin(GRAMMAR); printToken("CURLYBRACKETC"); return symbol(sym.CURLYBRACKETC, yytext()); } 
+    {WhiteSpace}                                    { printToken("SPECIALCHARACTER"); return symbol(sym.SPECIALCHARACTER, yytext()); }
+    [^]                                             { printToken("CODE"); return symbol(sym.CODE, yytext()); }
 }
 

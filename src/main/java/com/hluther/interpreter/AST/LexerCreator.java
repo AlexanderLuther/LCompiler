@@ -1,6 +1,7 @@
 package com.hluther.interpreter.AST;
 import com.hluther.entityClasses.DeterministicFiniteAutomaton;
 import com.hluther.entityClasses.LLexer;
+import com.hluther.gui.LCompilerFrame;
 import java.util.LinkedList;
 
 /**
@@ -29,9 +30,9 @@ public class LexerCreator implements Instruction{
      * @return Estra instrucción retorna el LLexer creado.
      */
     @Override
-    public Object execute(SymbolTable symbolTable) {
+    public Object execute(SymbolTable symbolTable, LCompilerFrame lCompilerFrame) {
         regularExpresions.forEach(inst -> {
-            automata.addFirst((DeterministicFiniteAutomaton)inst.execute(symbolTable));
+            automata.addFirst((DeterministicFiniteAutomaton)inst.execute(symbolTable, lCompilerFrame));
         });
         return new LLexer(automata);
     }

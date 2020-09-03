@@ -1,11 +1,12 @@
 package com.hluther.entityClasses;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 /**
  *
  * @author helmuth
  */
-public class DeterministicFiniteAutomaton {
+public class DeterministicFiniteAutomaton implements Serializable{
     
     private String id;
     private int row;

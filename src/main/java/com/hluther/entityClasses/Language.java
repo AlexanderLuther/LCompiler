@@ -1,9 +1,12 @@
 package com.hluther.entityClasses;
+
+import java.io.Serializable;
+
 /**
  *
  * @author helmuth
  */
-public class Language {
+public class Language implements Serializable{
     
     private String name;
     private String version;
@@ -11,9 +14,10 @@ public class Language {
     private int release;
     private String extension;
     private String sourceCode;
+    private LLexer lexer;
+    private LParser parser;
     
-    public Language() {
-        
+    public Language() {  
     }
 
     public Language(String name, String version, String author, int release, String extension) {
@@ -72,6 +76,23 @@ public class Language {
     public void setSourceCode(String sourceCode) {
         this.sourceCode = sourceCode;
     }
+
+    public LLexer getLexer() {
+        return lexer;
+    }
+
+    public void setLexer(LLexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public LParser getParser() {
+        return parser;
+    }
+
+    public void setParser(LParser parser) {
+        this.parser = parser;
+    }
     
     
+ 
 }

@@ -1,11 +1,12 @@
 package com.hluther.entityClasses;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 /**
  *
  * @author helmuth
  */
-public class State {
+public class State implements Serializable{
     
     private int id;
     private ArrayList<Integer> nodes;
